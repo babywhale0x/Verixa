@@ -1,0 +1,13 @@
+[package]
+name = "verixa"
+version = "1.0.0"
+edition = "2024"
+authors = ["Verixa Team"]
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", rev = "testnet", subdir = "aptos-move/framework/aptos-framework" }
+AptosStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", rev = "testnet", subdir = "aptos-move/framework/aptos-stdlib" }
+
+[addresses]
+verixa = "_"  # Will be replaced with actual address during deployment
+std = "0x1"
