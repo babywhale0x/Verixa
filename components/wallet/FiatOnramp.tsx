@@ -1,7 +1,7 @@
-'use client';
+﻿'use client';
 
-import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { useState } from 'react';
 import { X, Copy, CheckCircle } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -16,7 +16,6 @@ export function FiatOnramp({
 }) {
   const { account } = useWallet();
   const [copied, setCopied] = useState(false);
-
   const address = account?.address?.toString();
 
   const copyAddress = () => {
@@ -39,31 +38,17 @@ export function FiatOnramp({
             <X className="w-5 h-5" />
           </button>
         </div>
-
         <div className="space-y-4">
-          <p className="text-gray-600">
-            Send APT to your wallet address below to fund your account. Use the Aptos testnet faucet to get free testnet APT.
-          </p>
-
-          {/* Wallet Address */}
+          <p className="text-gray-600">Send APT to your wallet address to fund your account.</p>
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500 mb-2">Your Wallet Address</p>
             <div className="flex items-center gap-2">
               <p className="text-sm font-mono break-all flex-1">{address}</p>
-              <button
-                onClick={copyAddress}
-                className="p-2 hover:bg-gray-200 rounded shrink-0"
-              >
-                {copied ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                ) : (
-                  <Copy className="w-4 h-4 text-gray-500" />
-                )}
+              <button onClick={copyAddress} className="p-2 hover:bg-gray-200 rounded shrink-0">
+                {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-gray-500" />}
               </button>
             </div>
           </div>
-          
-          {/* Faucet Link */}
           
             href="https://aptos.dev/en/network/faucet"
             target="_blank"
@@ -72,15 +57,7 @@ export function FiatOnramp({
           >
             Get Testnet APT from Faucet
           </a>
-          
-          <p className="text-xs text-gray-400 text-center">
-            Fiat onramp (card payments) coming soon
-          </p>
-
-          <button
-            onClick={onClose}
-            className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-          >
+          <button onClick={onClose} className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50">
             Close
           </button>
         </div>
