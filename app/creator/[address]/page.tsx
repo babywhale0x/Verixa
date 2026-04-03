@@ -89,14 +89,14 @@ export default function CreatorProfilePage() {
     setIsSubscribing(true);
 
     try {
-      const transaction = {
+      const result = await signAndSubmitTransaction({
         data: {
-          function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::subscription::subscribe`,
+          function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::subscription::subscribe` as `${string}::${string}::${string}`,
           functionArguments: [creatorAddress],
+          typeArguments: [],
         },
-      };
+      });
 
-      const result = await signAndSubmitTransaction(transaction);
 
       toast.success('Subscribed successfully!');
       setIsSubscribed(true);
