@@ -70,7 +70,7 @@ export default function CreatorProfilePage() {
 
       // Check subscription status
       if (connected && account) {
-        const subscribed = await hasActiveSubscription(account.address, creatorAddress);
+        const subscribed = await hasActiveSubscription(account.address.toString(), creatorAddress);
         setIsSubscribed(subscribed);
       }
     } catch (error) {
