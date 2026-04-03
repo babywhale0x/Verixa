@@ -207,7 +207,7 @@ export default function ContentDetailPage() {
                     </div>
                   </div>
                   <button
-                    onClick={() => toast.info('Download starting...')}
+                    onClick={() => toast.success('Download starting...')}
                     className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
                   >
                     <Download className="w-5 h-5" />
