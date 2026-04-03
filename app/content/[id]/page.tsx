@@ -80,17 +80,16 @@ export default function ContentDetailPage() {
     setSelectedTier(tier);
 
     try {
-      const transaction = {
+      const result = await signAndSubmitTransaction({
         data: {
-          function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::purchase_access`,
+          function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::purchase_access` as `${string}::${string}::${string}`,
           functionArguments: [
             content.contentId.toString(),
             tier.toString(),
           ],
+          typeArguments: [],
         },
-      };
-
-      const result = await signAndSubmitTransaction(transaction);
+      });
 
       toast.success('Purchase successful!');
       setHasAccess(true);
