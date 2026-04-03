@@ -1,85 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
-import {
-  Elements,
-  PaymentElement,
-  useStripe,
-  useElements,
-} from '@stripe/react-stripe-js';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { X } from 'lucide-react';
-
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
-
-function CheckoutForm({
-  amount,
-  onSuccess,
-  onCancel,
-}: {
-  amount: number;
-  onSuccess: () => void;
-  onCancel: () => void;
-}) {
-  const stripe = useStripe();
-  const elements = useElements();
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-
-    setIsLoading(true);
-    setError(null);
-
-    const { error: submitError, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/wallet/success`,
-      },
-      redirect: 'if_required',
-    });
-
-    if (submitError) {
-      setError(submitError.message || 'Payment failed');
-    } else if (paymentIntent?.status === 'succeeded') {
-      onSuccess();
-    }
-
-    setIsLoading(false);
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <PaymentElement />
-
-      {error && (
-        <div className="p-3 bg-red-50 text-red-600 text-sm rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={onCancel}
-          className="flex-1 px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          disabled={isLoading || !stripe}
-          className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-blue-700"
-        >
-          {isLoading ? 'Processing...' : `Pay $${amount}`}
-        </button>
-      </div>
-    </form>
-  );
-}
+import { X, Copy, CheckCircle } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export function FiatOnramp({
   isOpen,
@@ -91,32 +15,16 @@ export function FiatOnramp({
   onSuccess: () => void;
 }) {
   const { account } = useWallet();
-  const [amount, setAmount] = useState(50);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
-  const initiatePayment = async () => {
-    if (!account?.address) return;
+  const address = account?.address?.toString();
 
-    setIsLoading(true);
-    try {
-      const response = await fetch('/api/stripe/create-intent', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          amountUsd: amount,
-          walletAddress: account.address,
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to create payment intent');
-
-      const data = await response.json();
-      setClientSecret(data.clientSecret);
-    } catch (error) {
-      console.error('Failed to initiate payment:', error);
-    } finally {
-      setIsLoading(false);
+  const copyAddress = () => {
+    if (address) {
+      navigator.clipboard.writeText(address);
+      setCopied(true);
+      toast.success('Address copied!');
+      setTimeout(() => setCopied(false), 2000);
     }
   };
 
@@ -132,45 +40,50 @@ export function FiatOnramp({
           </button>
         </div>
 
-        {!clientSecret ? (
-          <div className="space-y-4">
-            <p className="text-gray-600">
-              Add APT to your wallet to pay for storage and creator content.
-            </p>
+        <div className="space-y-4">
+          <p className="text-gray-600">
+            Send APT to your wallet address below to fund your account. Use the Aptos testnet faucet to get free testnet APT.
+          </p>
 
-            <div className="flex gap-2">
-              {[25, 50, 100, 250].map((amt) => (
-                <button
-                  key={amt}
-                  onClick={() => setAmount(amt)}
-                  className={`flex-1 py-2 rounded-lg border transition-colors ${
-                    amount === amt
-                      ? 'border-blue-600 bg-blue-50 text-blue-600'
-                      : 'border-gray-200 hover:border-gray-300'
-                  }`}
-                >
-                  ${amt}
-                </button>
-              ))}
+          {/* Wallet Address */}
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <p className="text-xs text-gray-500 mb-2">Your Wallet Address</p>
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-mono break-all flex-1">{address}</p>
+              <button
+                onClick={copyAddress}
+                className="p-2 hover:bg-gray-200 rounded shrink-0"
+              >
+                {copied ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4 text-gray-500" />
+                )}
+              </button>
             </div>
-
-            <button
-              onClick={initiatePayment}
-              disabled={isLoading}
-              className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium disabled:opacity-50 hover:bg-blue-700"
-            >
-              {isLoading ? 'Loading...' : `Continue to Payment`}
-            </button>
           </div>
-        ) : (
-          <Elements stripe={stripePromise} options={{ clientSecret }}>
-            <CheckoutForm
-              amount={amount}
-              onSuccess={onSuccess}
-              onCancel={() => setClientSecret(null)}
-            />
-          </Elements>
-        )}
+
+          {/* Faucet Link */}
+          
+            href="https://aptos.dev/en/network/faucet"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block w-full py-3 bg-blue-600 text-white rounded-lg font-medium text-center hover:bg-blue-700"
+          >
+            Get Testnet APT from Faucet
+          </a>
+
+          <p className="text-xs text-gray-400 text-center">
+            Fiat onramp (card payments) coming soon
+          </p>
+
+          <button
+            onClick={onClose}
+            className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );

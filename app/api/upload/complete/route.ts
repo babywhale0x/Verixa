@@ -1,15 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { completeUpload, generateEncryptionKey } from '@/lib/shelby';
-import { auth } from '@/lib/auth';
+﻿import { NextRequest, NextResponse } from 'next/server';
+import { completeUpload } from '@/lib/shelby';
 import { prisma } from '@/lib/db';
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await auth();
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
     const formData = await request.formData();
     const file = formData.get('file') as File;
     const metadataStr = formData.get('metadata') as string;
@@ -22,14 +16,22 @@ export async function POST(request: NextRequest) {
     }
 
     const metadata = JSON.parse(metadataStr);
+    const { walletAddress, blobId, name, contentType, isPublic, description } = metadata;
 
-    // Find pending upload
+    if (!walletAddress) {
+      return NextResponse.json(
+        { error: 'Wallet address required' },
+        { status: 401 }
+      );
+    }
+
+    let user = await prisma.user.findUnique({ where: { walletAddress } });
+    if (!user) {
+      user = await prisma.user.create({ data: { walletAddress } });
+    }
+
     const pendingUpload = await prisma.pendingUpload.findFirst({
-      where: {
-        userId: user.id,
-        blobId: metadata.blobId,
-        status: 'pending',
-      },
+      where: { userId: user.id, blobId, status: 'pending' },
     });
 
     if (!pendingUpload) {
@@ -39,55 +41,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Convert file to buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // Generate encryption key for private files
-    let encryptionKey: Uint8Array | undefined;
-    let encryptedKey: string | undefined;
+    const result = await completeUpload(blobId, buffer, file.type, file.name);
 
-    if (pendingUpload.encrypted) {
-      encryptionKey = generateEncryptionKey();
-      // In production, encrypt this key with user's public key
-      // For now, we'll store a hash/placeholder
-      encryptedKey = Buffer.from(encryptionKey).toString('base64');
-    }
-
-    // Complete upload to Shelby
-    const result = await completeUpload(
-      metadata.blobId,
-      buffer,
-      encryptionKey
-    );
-
-    // Save file record
-    await prisma.file.create({
-      data: {
+    await prisma.file.upsert({
+      where: { blobId },
+      create: {
         userId: user.id,
-        blobId: metadata.blobId,
+        blobId,
         rootHash: Buffer.from(result.rootHash),
         size: BigInt(result.size),
-        name: metadata.name || file.name,
-        contentType: metadata.contentType || file.type,
-        encrypted: pendingUpload.encrypted,
-        encryptionKey: encryptedKey,
-        isPublic: metadata.isPublic || false,
-        description: metadata.description,
+        name: name || file.name,
+        contentType: contentType || file.type,
+        encrypted: false,
+        isPublic: isPublic || false,
+        description: description || null,
       },
+      update: { isPublic: isPublic || false },
     });
 
-    // Update user's storage balance
-    await prisma.storageBalance.update({
-      where: { userId: user.id },
-      data: {
-        totalBytes: {
-          increment: BigInt(result.size),
-        },
-      },
-    });
-
-    // Update pending upload status
     await prisma.pendingUpload.update({
       where: { id: pendingUpload.id },
       data: { status: 'completed' },
@@ -95,7 +69,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      blobId: metadata.blobId,
+      blobId,
       rootHash: Array.from(result.rootHash),
       size: result.size,
     });

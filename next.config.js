@@ -5,6 +5,7 @@ const nextConfig = {
       bodySizeLimit: '50mb',
     },
   },
+  serverExternalPackages: ['@shelby-protocol/sdk', '@aptos-labs/ts-sdk', '@aptos-labs/aptos-client'],
   images: {
     remotePatterns: [
       {
@@ -16,6 +17,25 @@ const nextConfig = {
         hostname: '**.ipfs.io',
       },
     ],
+  },
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@aptos-labs/wallet-standard': require.resolve('@aptos-labs/wallet-standard'),
+    };
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      '@telegram-apps/bridge': false,
+      '@telegram-apps/sdk': false,
+      '@telegram-apps/transformers': false,
+      '@telegram-apps/types': false,
+      'fs': false,
+      'net': false,
+      'tls': false,
+      'dns': false,
+      'child_process': false,
+    };
+    return config;
   },
   async headers() {
     return [
@@ -31,5 +51,4 @@ const nextConfig = {
     ];
   },
 };
-
 module.exports = nextConfig;

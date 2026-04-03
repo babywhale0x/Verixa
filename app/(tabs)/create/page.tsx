@@ -19,7 +19,6 @@ export default function CreatePage() {
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
 
-  // Form state
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [tags, setTags] = useState('');
@@ -35,8 +34,6 @@ export default function CreatePage() {
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0];
       setFile(selectedFile);
-
-      // Create preview for images/videos
       if (selectedFile.type.startsWith('image/') || selectedFile.type.startsWith('video/')) {
         const url = URL.createObjectURL(selectedFile);
         setPreview(url);
@@ -46,7 +43,7 @@ export default function CreatePage() {
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
-    maxSize: 1024 * 1024 * 500, // 500MB
+    maxSize: 1024 * 1024 * 500,
     multiple: false,
   });
 
@@ -74,84 +71,126 @@ export default function CreatePage() {
     setIsUploading(true);
 
     try {
-      // Step 1: Upload file to Shelby
-      const initResponse = await fetch('/api/upload', {
+      const {
+        createDefaultErasureCodingProvider,
+        generateCommitments,
+        expectedTotalChunksets,
+        ShelbyBlobClient,
+        ShelbyClient,
+        defaultErasureCodingConfig,
+      } = await import('@shelby-protocol/sdk/browser');
+
+      const { Aptos, AptosConfig, Network } = await import('@aptos-labs/ts-sdk');
+
+      // Step 1: Encode file
+      toast.loading('Encoding file...', { id: 'upload' });
+      const data = Buffer.from(await file.arrayBuffer());
+      const provider = await createDefaultErasureCodingProvider();
+      const commitments = await generateCommitments(provider, data);
+      const config = defaultErasureCodingConfig();
+
+      // Step 2: Register on-chain
+      toast.loading('Registering on blockchain...', { id: 'upload' });
+      const blobName = `verixa-${Date.now()}-${file.name}`;
+
+      const payload = ShelbyBlobClient.createRegisterBlobPayload({
+        account: account.address.toString(),
+        blobName,
+        blobMerkleRoot: commitments.blob_merkle_root,
+        numChunksets: Number(expectedTotalChunksets(commitments.raw_data_size, config.chunkSizeBytes * config.erasure_k)),
+        expirationMicros: Math.floor((Date.now() + 1000 * 60 * 60 * 24 * 365) * 1000),
+        blobSize: Number(commitments.raw_data_size),
+        encoding: config.enumIndex,
+      });
+
+      const txResult = await signAndSubmitTransaction({ data: payload });
+
+      const aptosClient = new Aptos(new AptosConfig({ network: Network.TESTNET }));
+      await aptosClient.waitForTransaction({ transactionHash: txResult.hash });
+
+      // Step 3: Upload to RPC
+      toast.loading('Uploading to Shelby storage...', { id: 'upload' });
+      const shelbyClient = new ShelbyClient({
+        network: Network.TESTNET,
+        apiKey: process.env.NEXT_PUBLIC_SHELBY_API_KEY || '',
+      });
+
+      await shelbyClient.rpc.putBlob({
+        account: account.address.toString(),
+        blobName,
+        blobData: new Uint8Array(await file.arrayBuffer()),
+      });
+
+      // Step 4: Save to database
+      toast.loading('Saving metadata...', { id: 'upload' });
+      await fetch('/api/upload/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          fileSize: file.size,
+          walletAddress: account.address.toString(),
+          blobId: blobName,
+          name: file.name,
           contentType: file.type,
-          encrypted: false, // Public content is not encrypted
+          size: file.size,
+          isPublic: true,
+          description,
         }),
       });
 
-      if (!initResponse.ok) {
-        const error = await initResponse.json();
-        throw new Error(error.error || 'Failed to initiate upload');
-      }
-
-      const { blobId, rootHash } = await initResponse.json();
-
-      // Step 2: Complete upload
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('metadata', JSON.stringify({
-        blobId,
-        name: file.name,
-        contentType: file.type,
-        isPublic: true,
-      }));
-
-      const uploadResponse = await fetch('/api/upload/complete', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file');
-      }
-
-      // Step 3: Publish to blockchain
+      // Step 5: Publish to Verixa contract
       setIsUploading(false);
       setIsPublishing(true);
+      toast.loading('Publishing to marketplace...', { id: 'upload' });
 
       const tagList = tags.split(',').map((t) => t.trim()).filter(Boolean);
 
-      const transaction = {
+      const viewPrice = tiers[TIER_VIEW].enabled ? aptToOctas(tiers[TIER_VIEW].price || 0) : 0;
+      const borrowPrice = tiers[TIER_BORROW].enabled ? aptToOctas(tiers[TIER_BORROW].price || 0) : 0;
+      const licensePrice = tiers[TIER_LICENSE].enabled ? aptToOctas(tiers[TIER_LICENSE].price || 0) : 0;
+      const commercialPrice = tiers[TIER_COMMERCIAL].enabled ? aptToOctas(tiers[TIER_COMMERCIAL].price || 0) : 0;
+      const subscriptionPrice = tiers[TIER_SUBSCRIPTION].enabled ? aptToOctas(tiers[TIER_SUBSCRIPTION].price || 0) : 0;
+
+      console.log('Publishing with prices:', { viewPrice, borrowPrice, licensePrice, commercialPrice, subscriptionPrice });
+
+      await signAndSubmitTransaction({
         data: {
           function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::publish_content`,
           functionArguments: [
             title,
             description,
             file.type,
-            blobId,
-            Array.from(new Uint8Array(rootHash)),
-            blobId, // preview_blob_id (same as main for now)
-            tiers[TIER_VIEW].enabled ? aptToOctas(tiers[TIER_VIEW].price) : 0,
-            tiers[TIER_BORROW].enabled ? aptToOctas(tiers[TIER_BORROW].price) : 0,
-            tiers[TIER_LICENSE].enabled ? aptToOctas(tiers[TIER_LICENSE].price) : 0,
-            tiers[TIER_COMMERCIAL].enabled ? aptToOctas(tiers[TIER_COMMERCIAL].price) : 0,
-            tiers[TIER_SUBSCRIPTION].enabled ? aptToOctas(tiers[TIER_SUBSCRIPTION].price) : 0,
+            blobName,
+            (() => {
+              const root = commitments.blob_merkle_root;
+              if (typeof root === 'string') {
+                const hex = root.startsWith('0x') ? root.slice(2) : root;
+                return Array.from(Buffer.from(hex, 'hex'));
+              }
+              return Array.from(root as Uint8Array);
+            })(),
+            blobName,
+            viewPrice,
+            borrowPrice,
+            licensePrice,
+            commercialPrice,
+            subscriptionPrice,
             tagList,
-            0, // collection_id
+            0,
           ],
         },
-      };
+      });
 
-      const result = await signAndSubmitTransaction(transaction);
+      toast.success('Content published successfully!', { id: 'upload' });
 
-      toast.success('Content published successfully!');
-
-      // Reset form
       setFile(null);
       setPreview(null);
       setTitle('');
       setDescription('');
       setTags('');
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Publish error:', error);
-      toast.error('Failed to publish content');
+      toast.error(error?.message || 'Failed to publish content', { id: 'upload' });
     } finally {
       setIsUploading(false);
       setIsPublishing(false);
@@ -180,7 +219,6 @@ export default function CreatePage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -221,10 +259,7 @@ export default function CreatePage() {
                       </p>
                     </div>
                     <button
-                      onClick={() => {
-                        setFile(null);
-                        setPreview(null);
-                      }}
+                      onClick={() => { setFile(null); setPreview(null); }}
                       className="text-red-600 hover:text-red-700"
                     >
                       Remove
@@ -250,9 +285,7 @@ export default function CreatePage() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
                   <input
                     type="text"
                     value={title}
@@ -263,9 +296,7 @@ export default function CreatePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Description
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
@@ -276,9 +307,7 @@ export default function CreatePage() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Tags (comma separated)
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
                   <div className="relative">
                     <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <input
@@ -324,7 +353,7 @@ export default function CreatePage() {
                         step="0.001"
                         min="0"
                         value={tiers[TIER_VIEW].price}
-                        onChange={(e) => handleTierChange(TIER_VIEW, 'price', parseFloat(e.target.value))}
+                        onChange={(e) => handleTierChange(TIER_VIEW, 'price', parseFloat(e.target.value) || 0)}
                         className="w-20 px-2 py-1 border rounded"
                       />
                       <span className="text-sm text-gray-500">APT</span>
@@ -356,7 +385,7 @@ export default function CreatePage() {
                         step="0.001"
                         min="0"
                         value={tiers[TIER_BORROW].price}
-                        onChange={(e) => handleTierChange(TIER_BORROW, 'price', parseFloat(e.target.value))}
+                        onChange={(e) => handleTierChange(TIER_BORROW, 'price', parseFloat(e.target.value) || 0)}
                         className="w-20 px-2 py-1 border rounded"
                       />
                       <span className="text-sm text-gray-500">APT</span>
@@ -388,7 +417,7 @@ export default function CreatePage() {
                         step="0.001"
                         min="0"
                         value={tiers[TIER_LICENSE].price}
-                        onChange={(e) => handleTierChange(TIER_LICENSE, 'price', parseFloat(e.target.value))}
+                        onChange={(e) => handleTierChange(TIER_LICENSE, 'price', parseFloat(e.target.value) || 0)}
                         className="w-20 px-2 py-1 border rounded"
                       />
                       <span className="text-sm text-gray-500">APT</span>
@@ -420,7 +449,7 @@ export default function CreatePage() {
                         step="0.001"
                         min="0"
                         value={tiers[TIER_COMMERCIAL].price}
-                        onChange={(e) => handleTierChange(TIER_COMMERCIAL, 'price', parseFloat(e.target.value))}
+                        onChange={(e) => handleTierChange(TIER_COMMERCIAL, 'price', parseFloat(e.target.value) || 0)}
                         className="w-20 px-2 py-1 border rounded"
                       />
                       <span className="text-sm text-gray-500">APT</span>
@@ -437,20 +466,11 @@ export default function CreatePage() {
               className="w-full py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isUploading ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Uploading...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin" />Uploading...</>
               ) : isPublishing ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Publishing...
-                </>
+                <><Loader2 className="w-5 h-5 animate-spin" />Publishing...</>
               ) : (
-                <>
-                  <Upload className="w-5 h-5" />
-                  Publish Content
-                </>
+                <><Upload className="w-5 h-5" />Publish Content</>
               )}
             </button>
 

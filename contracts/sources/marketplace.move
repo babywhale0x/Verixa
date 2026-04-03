@@ -95,7 +95,7 @@ module verixa::marketplace {
         is_paused: bool,
     }
 
-    struct CreatorStats has key {
+    struct CreatorStats has key, store {
         creator: address,
         total_contents: u64,
         total_sales: u64,

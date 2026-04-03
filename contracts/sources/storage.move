@@ -323,60 +323,54 @@ module verixa::storage {
 
     /// Process auto-deductions for multiple users (called by cron job)
     public entry fun process_deductions(
-        processor: &signer,
-        users: vector<address>,
-    ) acquires UserStorage, StorageConfig {
-        let config = borrow_global<StorageConfig>(@verixa);
-        let current_time = timestamp::now_seconds();
-        let i = 0;
+    _processor: &signer,
+    users: vector<address>,
+) acquires UserStorage, StorageConfig {
+    let current_time = timestamp::now_seconds();
+    let grace_period_seconds = borrow_global<StorageConfig>(@verixa).grace_period_seconds;
+    let i = 0;
 
-        while (i < vector::length(&users)) {
-            let user_addr = *vector::borrow(&users, i);
+    while (i < vector::length(&users)) {
+        let user_addr = *vector::borrow(&users, i);
 
-            if (exists<UserStorage>(user_addr)) {
-                let storage = borrow_global_mut<UserStorage>(user_addr);
-                let seconds_since_last = current_time - storage.last_deduction_timestamp;
+        if (exists<UserStorage>(user_addr)) {
+            let storage = borrow_global_mut<UserStorage>(user_addr);
+            let seconds_since_last = current_time - storage.last_deduction_timestamp;
 
-                // Process if a month has passed
-                if (seconds_since_last >= SECONDS_PER_MONTH && storage.total_bytes > 0) {
-                    let monthly_cost = calculate_monthly_cost(storage.total_bytes);
+            if (seconds_since_last >= SECONDS_PER_MONTH && storage.total_bytes > 0) {
+                let monthly_cost = calculate_monthly_cost(storage.total_bytes);
 
-                    if (storage.wallet_balance >= monthly_cost) {
-                        // Successful deduction
-                        storage.wallet_balance = storage.wallet_balance - monthly_cost;
-                        storage.last_deduction_timestamp = current_time;
-                        storage.grace_period_start = 0;
+                if (storage.wallet_balance >= monthly_cost) {
+                    storage.wallet_balance = storage.wallet_balance - monthly_cost;
+                    storage.last_deduction_timestamp = current_time;
+                    storage.grace_period_start = 0;
 
-                        // Update file payment timestamps
-                        update_file_payment_timestamps(storage, current_time);
+                    let config_mut = borrow_global_mut<StorageConfig>(@verixa);
+                    config_mut.total_revenue = config_mut.total_revenue + monthly_cost;
 
-                        let config_mut = borrow_global_mut<StorageConfig>(@verixa);
-                        config_mut.total_revenue = config_mut.total_revenue + monthly_cost;
+                    event::emit(AutoDeduction {
+                        user: user_addr,
+                        amount: monthly_cost,
+                        months_covered: 1,
+                        timestamp: current_time,
+                    });
+                } else {
+                    if (storage.grace_period_start == 0) {
+                        storage.grace_period_start = current_time;
 
-                        event::emit(AutoDeduction {
+                        event::emit(GracePeriodStarted {
                             user: user_addr,
-                            amount: monthly_cost,
-                            months_covered: 1,
+                            grace_period_end: current_time + grace_period_seconds,
                             timestamp: current_time,
                         });
-                    } else {
-                        // Insufficient balance - enter or continue grace period
-                        if (storage.grace_period_start == 0) {
-                            storage.grace_period_start = current_time;
-
-                            event::emit(GracePeriodStarted {
-                                user: user_addr,
-                                grace_period_end: current_time + config.grace_period_seconds,
-                                timestamp: current_time,
-                            });
-                        };
                     };
                 };
             };
-
-            i = i + 1;
         };
-    }
+
+        i = i + 1;
+    };
+}
 
     /// Admin: Update storage pricing
     public entry fun update_pricing(
@@ -435,7 +429,7 @@ module verixa::storage {
     }
 
     #[view]
-    public fun is_file_accessible(user: address, blob_id: String): bool acquires UserStorage {
+    public fun is_file_accessible(user: address, blob_id: String): bool acquires UserStorage, StorageConfig {
         if (!exists<UserStorage>(user)) {
             return false
         };
@@ -471,9 +465,10 @@ module verixa::storage {
     }
 
     #[view]
-    public fun get_config(): StorageConfig acquires StorageConfig {
-        *borrow_global<StorageConfig>(@verixa)
-    }
+public fun get_config(): (u64, u64, u64) acquires StorageConfig {
+    let config = borrow_global<StorageConfig>(@verixa);
+    (config.cost_per_gb_month, config.grace_period_seconds, config.total_revenue)
+}
 
     // Helper functions
 

@@ -119,7 +119,7 @@ module verixa::subscription {
         creator: &signer,
         monthly_price: u64,
         benefits_description: String,
-    ) acquires PlatformConfig {
+    ) acquires PlatformConfig, CreatorSubscriptions {
         let creator_addr = signer::address_of(creator);
         let config = borrow_global<PlatformConfig>(@verixa);
 
@@ -272,7 +272,7 @@ module verixa::subscription {
     public entry fun process_recurring_payments(
         processor: &signer,
         creators: vector<address>,
-    ) acquires CreatorSubscriptions, SubscriberRegistry, PlatformConfig {
+    ) acquires CreatorSubscriptions, PlatformConfig {
         let config = borrow_global<PlatformConfig>(@verixa);
         let current_time = timestamp::now_seconds();
         let i = 0;

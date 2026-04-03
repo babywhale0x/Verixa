@@ -113,7 +113,7 @@ export default function WalletPage() {
             {balance !== undefined ? formatApt(Number(balance)) : '0.0000 APT'}
           </div>
           <div className="flex items-center gap-2 text-blue-100">
-            <span className="text-sm">{account?.address.slice(0, 20)}...</span>
+            <span className="text-sm">{account?.address.toString().slice(0, 20)}...</span>
             <button
               onClick={copyAddress}
               className="p-1 hover:bg-white/20 rounded"

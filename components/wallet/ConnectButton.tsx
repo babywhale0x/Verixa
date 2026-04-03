@@ -8,18 +8,6 @@ export function ConnectButton() {
   const { connect, disconnect, account, connected, wallets } = useWallet();
   const [showDropdown, setShowDropdown] = useState(false);
 
-  const handleConnect = async () => {
-    const petraWallet = wallets.find((w) => w.name === 'Petra');
-    if (petraWallet) {
-      await connect(petraWallet.name);
-    }
-  };
-
-  const handleDisconnect = async () => {
-    await disconnect();
-    setShowDropdown(false);
-  };
-
   const formatAddress = (address: string) => {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
@@ -33,15 +21,14 @@ export function ConnectButton() {
         >
           <div className="w-2 h-2 bg-green-500 rounded-full" />
           <span className="font-medium text-gray-900">
-            {formatAddress(account.address)}
+            {formatAddress(account.address.toString())}
           </span>
           <ChevronDown className="w-4 h-4 text-gray-500" />
         </button>
-
         {showDropdown && (
           <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
             <button
-              onClick={handleDisconnect}
+              onClick={() => { disconnect(); setShowDropdown(false); }}
               className="flex items-center gap-2 w-full px-4 py-3 text-left hover:bg-gray-50 rounded-lg"
             >
               <LogOut className="w-4 h-4" />
@@ -54,12 +41,17 @@ export function ConnectButton() {
   }
 
   return (
-    <button
-      onClick={handleConnect}
-      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-    >
-      <Wallet className="w-4 h-4" />
-      <span className="font-medium">Connect Wallet</span>
-    </button>
+    <div className="flex gap-2">
+      {wallets.map((wallet) => (
+        <button
+          key={wallet.name}
+          onClick={() => connect(wallet.name)}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <Wallet className="w-4 h-4" />
+          <span className="font-medium">{wallet.name}</span>
+        </button>
+      ))}
+    </div>
   );
 }

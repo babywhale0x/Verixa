@@ -1,13 +1,23 @@
-import { ShelbyClient } from '@shelby-protocol/sdk';
+﻿import { ShelbyNodeClient } from '@shelby-protocol/sdk/node';
+import { Network, Ed25519PrivateKey, Ed25519Account } from '@aptos-labs/ts-sdk';
 
-// Initialize Shelby client
-const shelbyConfig = {
-  network: (process.env.SHELBY_NETWORK as 'testnet' | 'mainnet') || 'testnet',
-  rpcUrl: process.env.SHELBY_RPC_URL,
-  privateKey: process.env.SHELBY_PRIVATE_KEY,
-};
+const shelbyClient = new ShelbyNodeClient({
+  network: Network.TESTNET,
+  apiKey: process.env.SHELBY_API_KEY || '',
+});
 
-export const shelby = new ShelbyClient(shelbyConfig);
+function getAccount(): Ed25519Account {
+  const rawKey = process.env.SHELBY_PRIVATE_KEY || '';
+  let hexKey = rawKey;
+  if (hexKey.includes('ed25519-priv-')) {
+    hexKey = hexKey.split('ed25519-priv-')[1];
+  }
+  if (hexKey.startsWith('0x') || hexKey.startsWith('0X')) {
+    hexKey = hexKey.slice(2);
+  }
+  const privateKey = new Ed25519PrivateKey(hexKey);
+  return new Ed25519Account({ privateKey });
+}
 
 export interface UploadSession {
   blobId: string;
@@ -15,154 +25,69 @@ export interface UploadSession {
   rootHash: Uint8Array;
 }
 
-export interface UploadResult {
-  blobId: string;
-  rootHash: Uint8Array;
-  size: number;
-}
-
-// Initiate upload session
 export async function initiateUpload(
   fileSize: number,
   contentType: string,
-  encrypted: boolean = true
+  encrypted: boolean = false
 ): Promise<UploadSession> {
-  try {
-    const reservation = await shelby.reserveBlob({
-      size: fileSize,
-      ttl: 365 * 24 * 60 * 60, // 1 year
-      contentType,
-    });
-
-    return {
-      blobId: reservation.blobId,
-      uploadUrl: reservation.uploadUrl,
-      rootHash: new Uint8Array(reservation.rootHash),
-    };
-  } catch (error) {
-    console.error('Failed to initiate Shelby upload:', error);
-    throw new Error('Failed to initiate upload session');
-  }
+  const blobId = `verixa-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  return {
+    blobId,
+    uploadUrl: '/api/upload/complete',
+    rootHash: new Uint8Array(32),
+  };
 }
 
-// Complete upload to Shelby
 export async function completeUpload(
   blobId: string,
   fileData: Buffer,
-  encryptionKey?: Uint8Array
-): Promise<UploadResult> {
+  contentType: string,
+  fileName: string
+): Promise<{ rootHash: Uint8Array; size: number; blobName: string }> {
   try {
-    let dataToUpload = fileData;
+    const account = getAccount();
+    const blobName = `${blobId}/${fileName}`;
+    const expirationMicros = (Date.now() + 1000 * 60 * 60 * 24 * 365) * 1000;
 
-    // Encrypt if key provided
-    if (encryptionKey) {
-      dataToUpload = await encryptBuffer(fileData, encryptionKey);
-    }
-
-    // Upload to Shelby
-    const result = await shelby.uploadBlob({
-      blobId,
-      data: dataToUpload,
+    await shelbyClient.upload({
+      signer: account,
+      blobData: fileData,
+      blobName,
+      expirationMicros,
     });
-
-    // Verify upload
-    const verified = await shelby.verifyBlob({
-      blobId,
-      rootHash: result.rootHash,
-    });
-
-    if (!verified) {
-      throw new Error('Blob verification failed');
-    }
 
     return {
-      blobId,
-      rootHash: new Uint8Array(result.rootHash),
+      rootHash: new Uint8Array(32),
       size: fileData.length,
+      blobName,
     };
   } catch (error) {
-    console.error('Failed to complete Shelby upload:', error);
-    throw new Error('Failed to complete upload');
+    console.error('Shelby upload error:', error);
+    throw new Error('Failed to upload to Shelby storage');
   }
 }
 
-// Retrieve blob from Shelby
-export async function retrieveBlob(
-  blobId: string,
-  decryptionKey?: Uint8Array
+export async function downloadBlob(
+  blobName: string
 ): Promise<Buffer> {
   try {
-    const blob = await shelby.getBlob({ blobId });
-
-    if (decryptionKey) {
-      return decryptBuffer(Buffer.from(blob.data), decryptionKey);
-    }
-
-    return Buffer.from(blob.data);
+    const account = getAccount();
+    const blob = await shelbyClient.download({
+      account: account.accountAddress,
+      blobName,
+    });
+    const chunks: Buffer[] = [];
+    return new Promise((resolve, reject) => {
+      blob.stream.on('data', (chunk: Buffer) => chunks.push(chunk));
+      blob.stream.on('end', () => resolve(Buffer.concat(chunks)));
+      blob.stream.on('error', reject);
+    });
   } catch (error) {
-    console.error('Failed to retrieve blob:', error);
-    throw new Error('Failed to retrieve file');
+    console.error('Shelby download error:', error);
+    throw new Error('Failed to download from Shelby storage');
   }
 }
 
-// Generate encryption key for client-side encryption
-export function generateEncryptionKey(): Uint8Array {
-  return crypto.getRandomValues(new Uint8Array(32));
-}
-
-// Encrypt buffer using AES-256-GCM
-async function encryptBuffer(data: Buffer, key: Uint8Array): Promise<Buffer> {
-  const iv = crypto.getRandomValues(new Uint8Array(12));
-
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key,
-    'AES-GCM',
-    false,
-    ['encrypt']
-  );
-
-  const encrypted = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv },
-    cryptoKey,
-    data
-  );
-
-  // Prepend IV to encrypted data
-  const result = new Uint8Array(iv.length + encrypted.byteLength);
-  result.set(iv);
-  result.set(new Uint8Array(encrypted), iv.length);
-
-  return Buffer.from(result);
-}
-
-// Decrypt buffer using AES-256-GCM
-async function decryptBuffer(data: Buffer, key: Uint8Array): Promise<Buffer> {
-  const iv = data.slice(0, 12);
-  const encrypted = data.slice(12);
-
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    key,
-    'AES-GCM',
-    false,
-    ['decrypt']
-  );
-
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: new Uint8Array(iv) },
-    cryptoKey,
-    encrypted
-  );
-
-  return Buffer.from(decrypted);
-}
-
-// Calculate storage cost
-export function calculateStorageCost(sizeBytes: number, months: number = 1): number {
-  const bytesPerGB = 1073741824;
-  const costPerGBMonthOctas = 100000; // 0.001 APT
-
-  const gb = Math.ceil(sizeBytes / bytesPerGB);
-  return gb * costPerGBMonthOctas * months;
+export function generateBlobId(): string {
+  return `verixa-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 }
