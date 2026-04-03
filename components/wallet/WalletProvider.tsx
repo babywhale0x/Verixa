@@ -3,21 +3,9 @@
 import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react';
 import { PropsWithChildren } from 'react';
 
-const optInWallets = ['Petra'] as any;
-
-const dappInfo = {
-  aptosConnect: {
-    dappName: 'Verixa',
-  },
-};
-
 export function WalletProvider({ children }: PropsWithChildren) {
   return (
-    <AptosWalletAdapterProvider
-      dappInfo={dappInfo}
-      autoConnect={false}
-      optInWallets={optInWallets}
-    >
+    <AptosWalletAdapterProvider autoConnect={false}>
       {children}
     </AptosWalletAdapterProvider>
   );
