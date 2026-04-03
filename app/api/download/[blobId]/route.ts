@@ -43,7 +43,7 @@ export async function GET(
     // Retrieve from Shelby using blobId as blobName
     const data = await downloadBlob(blobId);
 
-    return new NextResponse(data, {
+    return new NextResponse(new Uint8Array(data), {
       headers: {
         'Content-Type': file.contentType,
         'Content-Disposition': `attachment; filename="${file.name}"`,
