@@ -94,7 +94,7 @@ export default function CreatePage() {
       const blobName = `verixa-${Date.now()}-${file.name}`;
 
       const payload = ShelbyBlobClient.createRegisterBlobPayload({
-        account: account.address.toString(),
+        account: account.address as any,
         blobName,
         blobMerkleRoot: commitments.blob_merkle_root,
         numChunksets: Number(expectedTotalChunksets(commitments.raw_data_size, config.chunkSizeBytes * config.erasure_k)),
@@ -116,7 +116,7 @@ export default function CreatePage() {
       });
 
       await shelbyClient.rpc.putBlob({
-        account: account.address.toString(),
+        account: account.address as any,
         blobName,
         blobData: new Uint8Array(await file.arrayBuffer()),
       });
@@ -149,8 +149,6 @@ export default function CreatePage() {
       const licensePrice = tiers[TIER_LICENSE].enabled ? aptToOctas(tiers[TIER_LICENSE].price || 0) : 0;
       const commercialPrice = tiers[TIER_COMMERCIAL].enabled ? aptToOctas(tiers[TIER_COMMERCIAL].price || 0) : 0;
       const subscriptionPrice = tiers[TIER_SUBSCRIPTION].enabled ? aptToOctas(tiers[TIER_SUBSCRIPTION].price || 0) : 0;
-
-      console.log('Publishing with prices:', { viewPrice, borrowPrice, licensePrice, commercialPrice, subscriptionPrice });
 
       await signAndSubmitTransaction({
         data: {
@@ -229,7 +227,6 @@ export default function CreatePage() {
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left: File Upload */}
           <div className="space-y-6">
             <div className="card p-6">
               <h2 className="text-lg font-semibold mb-4">Upload File</h2>
@@ -279,10 +276,8 @@ export default function CreatePage() {
               )}
             </div>
 
-            {/* Content Details */}
             <div className="card p-6">
               <h2 className="text-lg font-semibold mb-4">Content Details</h2>
-
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
@@ -294,7 +289,6 @@ export default function CreatePage() {
                     placeholder="Enter content title"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
                   <textarea
@@ -305,7 +299,6 @@ export default function CreatePage() {
                     placeholder="Describe your content"
                   />
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
                   <div className="relative">
@@ -323,13 +316,10 @@ export default function CreatePage() {
             </div>
           </div>
 
-          {/* Right: Pricing Tiers */}
           <div className="space-y-6">
             <div className="card p-6">
               <h2 className="text-lg font-semibold mb-4">Pricing Tiers</h2>
-
               <div className="space-y-4">
-                {/* View Tier */}
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <Eye className="w-5 h-5 text-blue-500" />
                   <div className="flex-1">
@@ -361,7 +351,6 @@ export default function CreatePage() {
                   )}
                 </div>
 
-                {/* Borrow Tier */}
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <Download className="w-5 h-5 text-purple-500" />
                   <div className="flex-1">
@@ -393,7 +382,6 @@ export default function CreatePage() {
                   )}
                 </div>
 
-                {/* License Tier */}
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <Download className="w-5 h-5 text-green-500" />
                   <div className="flex-1">
@@ -425,7 +413,6 @@ export default function CreatePage() {
                   )}
                 </div>
 
-                {/* Commercial Tier */}
                 <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                   <Crown className="w-5 h-5 text-yellow-500" />
                   <div className="flex-1">
@@ -459,7 +446,6 @@ export default function CreatePage() {
               </div>
             </div>
 
-            {/* Publish Button */}
             <button
               onClick={handlePublish}
               disabled={isUploading || isPublishing || !file || !title}
