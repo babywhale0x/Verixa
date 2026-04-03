@@ -39,17 +39,26 @@ export function FiatOnramp({
           </button>
         </div>
         <div className="space-y-4">
-          <p className="text-gray-600">Send APT to your wallet address to fund your account.</p>
+          <p className="text-gray-600">
+            Send APT to your wallet address to fund your account.
+          </p>
           <div className="p-4 bg-gray-50 rounded-lg">
             <p className="text-xs text-gray-500 mb-2">Your Wallet Address</p>
             <div className="flex items-center gap-2">
               <p className="text-sm font-mono break-all flex-1">{address}</p>
-              <button onClick={copyAddress} className="p-2 hover:bg-gray-200 rounded shrink-0">
-                {copied ? <CheckCircle className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4 text-gray-500" />}
+              <button
+                onClick={copyAddress}
+                className="p-2 hover:bg-gray-200 rounded shrink-0"
+              >
+                {copied ? (
+                  <CheckCircle className="w-4 h-4 text-green-500" />
+                ) : (
+                  <Copy className="w-4 h-4 text-gray-500" />
+                )}
               </button>
             </div>
           </div>
-          
+          <a
             href="https://aptos.dev/en/network/faucet"
             target="_blank"
             rel="noopener noreferrer"
@@ -57,7 +66,10 @@ export function FiatOnramp({
           >
             Get Testnet APT from Faucet
           </a>
-          <button onClick={onClose} className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+          <button
+            onClick={onClose}
+            className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+          >
             Close
           </button>
         </div>
