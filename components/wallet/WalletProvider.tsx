@@ -3,7 +3,7 @@
 import { AptosWalletAdapterProvider } from '@aptos-labs/wallet-adapter-react';
 import { PropsWithChildren } from 'react';
 
-const optInWallets = ['Petra'];
+const optInWallets = ['Petra'] as any;
 
 const dappInfo = {
   aptosConnect: {
