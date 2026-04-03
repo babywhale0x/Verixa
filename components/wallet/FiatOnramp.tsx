@@ -62,7 +62,7 @@ export function FiatOnramp({
               </button>
             </div>
           </div>
-
+          
           {/* Faucet Link */}
           
             href="https://aptos.dev/en/network/faucet"
@@ -72,7 +72,7 @@ export function FiatOnramp({
           >
             Get Testnet APT from Faucet
           </a>
-
+          
           <p className="text-xs text-gray-400 text-center">
             Fiat onramp (card payments) coming soon
           </p>
