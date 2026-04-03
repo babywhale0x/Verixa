@@ -33,7 +33,7 @@ export default function CreatorProfilePage() {
   const [isSubscribing, setIsSubscribing] = useState(false);
 
   const creatorAddress = params.address as string;
-  const isOwnProfile = account?.address === creatorAddress;
+  const isOwnProfile = account?.address?.toString() === creatorAddress;
 
   useEffect(() => {
     fetchCreatorData();
