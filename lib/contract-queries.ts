@@ -1,4 +1,6 @@
-import { aptos, VERIXA_MODULE_ADDRESS, MARKETPLACE_MODULE, STORAGE_MODULE, SUBSCRIPTION_MODULE } from './aptos';
+import { aptos, MARKETPLACE_MODULE, STORAGE_MODULE, SUBSCRIPTION_MODULE } from './aptos';
+
+type MoveFunction = `${string}::${string}::${string}`;
 
 // Marketplace queries
 
@@ -6,7 +8,7 @@ export async function getContent(contentId: bigint) {
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::get_content`,
+        function: `${MARKETPLACE_MODULE}::get_content` as MoveFunction,
         functionArguments: [contentId.toString()],
       },
     });
@@ -21,7 +23,7 @@ export async function getCreatorContents(creatorAddress: string): Promise<bigint
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::get_creator_contents`,
+        function: `${MARKETPLACE_MODULE}::get_creator_contents` as MoveFunction,
         functionArguments: [creatorAddress],
       },
     });
@@ -44,7 +46,7 @@ export async function hasValidAccess(
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::has_valid_access`,
+        function: `${MARKETPLACE_MODULE}::has_valid_access` as MoveFunction,
         functionArguments: [userAddress, contentId.toString(), tier.toString()],
       },
     });
@@ -60,7 +62,7 @@ export async function getUserPurchases(userAddress: string): Promise<bigint[]> {
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::get_user_purchases`,
+        function: `${MARKETPLACE_MODULE}::get_user_purchases` as MoveFunction,
         functionArguments: [userAddress],
       },
     });
@@ -79,7 +81,7 @@ export async function getPlatformStats(): Promise<{ volume: bigint; transactions
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::get_platform_stats`,
+        function: `${MARKETPLACE_MODULE}::get_platform_stats` as MoveFunction,
         functionArguments: [],
       },
     });
@@ -104,7 +106,7 @@ export async function getCreatorStats(creatorAddress: string): Promise<{
   try {
     const result = await aptos.view({
       payload: {
-        function: `${MARKETPLACE_MODULE}::get_creator_stats`,
+        function: `${MARKETPLACE_MODULE}::get_creator_stats` as MoveFunction,
         functionArguments: [creatorAddress],
       },
     });
@@ -138,7 +140,7 @@ export async function getUserStorage(userAddress: string): Promise<{
   try {
     const result = await aptos.view({
       payload: {
-        function: `${STORAGE_MODULE}::get_user_storage`,
+        function: `${STORAGE_MODULE}::get_user_storage` as MoveFunction,
         functionArguments: [userAddress],
       },
     });
@@ -166,7 +168,7 @@ export async function isFileAccessible(userAddress: string, blobId: string): Pro
   try {
     const result = await aptos.view({
       payload: {
-        function: `${STORAGE_MODULE}::is_file_accessible`,
+        function: `${STORAGE_MODULE}::is_file_accessible` as MoveFunction,
         functionArguments: [userAddress, blobId],
       },
     });
@@ -182,7 +184,7 @@ export async function calculateStorageCost(sizeBytes: bigint, months: number): P
   try {
     const result = await aptos.view({
       payload: {
-        function: `${STORAGE_MODULE}::calculate_storage_cost`,
+        function: `${STORAGE_MODULE}::calculate_storage_cost` as MoveFunction,
         functionArguments: [sizeBytes.toString(), months.toString()],
       },
     });
@@ -200,7 +202,7 @@ export async function hasActiveSubscription(subscriberAddress: string, creatorAd
   try {
     const result = await aptos.view({
       payload: {
-        function: `${SUBSCRIPTION_MODULE}::has_active_subscription`,
+        function: `${SUBSCRIPTION_MODULE}::has_active_subscription` as MoveFunction,
         functionArguments: [subscriberAddress, creatorAddress],
       },
     });
@@ -219,7 +221,7 @@ export async function getCreatorSubscriberStats(creatorAddress: string): Promise
   try {
     const result = await aptos.view({
       payload: {
-        function: `${SUBSCRIPTION_MODULE}::get_creator_subscriber_stats`,
+        function: `${SUBSCRIPTION_MODULE}::get_creator_subscriber_stats` as MoveFunction,
         functionArguments: [creatorAddress],
       },
     });
