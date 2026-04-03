@@ -18,32 +18,47 @@ interface Transaction {
 }
 
 export default function WalletPage() {
-  const { connected, account, balance } = useWallet();
+  const { connected, account } = useWallet();
   const [showFundModal, setShowFundModal] = useState(false);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [aptBalance, setAptBalance] = useState<number | null>(null);
 
   useEffect(() => {
-    if (connected) {
+    if (connected && account) {
+      fetchBalance();
       fetchTransactions();
     }
-  }, [connected]);
+  }, [connected, account]);
+
+  const fetchBalance = async () => {
+    try {
+      const response = await fetch(
+        `https://fullnode.testnet.aptoslabs.com/v1/accounts/${account?.address.toString()}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
+      );
+      if (response.ok) {
+        const data = await response.json();
+        setAptBalance(Number(data.data.coin.value));
+      }
+    } catch (error) {
+      console.error('Failed to fetch balance:', error);
+    }
+  };
 
   const fetchTransactions = async () => {
     try {
-      // Mock transactions for now
       const mockTransactions: Transaction[] = [
         {
           id: '1',
           type: 'receive',
-          amount: 100000000, // 1 APT
+          amount: 100000000,
           from: '0x1234...5678',
           timestamp: new Date(Date.now() - 86400000).toISOString(),
         },
         {
           id: '2',
           type: 'purchase',
-          amount: 100000, // 0.001 APT
+          amount: 100000,
           contentTitle: 'Summer Vibes EP',
           timestamp: new Date(Date.now() - 172800000).toISOString(),
         },
@@ -58,7 +73,7 @@ export default function WalletPage() {
 
   const copyAddress = () => {
     if (account?.address) {
-      navigator.clipboard.writeText(account.address);
+      navigator.clipboard.writeText(account.address.toString());
       toast.success('Address copied to clipboard');
     }
   };
@@ -87,7 +102,6 @@ export default function WalletPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
@@ -97,7 +111,6 @@ export default function WalletPage() {
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Balance Card */}
         <div className="card p-8 mb-8 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
           <div className="flex items-center justify-between mb-4">
             <span className="text-blue-100">Total Balance</span>
@@ -110,20 +123,16 @@ export default function WalletPage() {
             </button>
           </div>
           <div className="text-4xl font-bold mb-2">
-            {balance !== undefined ? formatApt(Number(balance)) : '0.0000 APT'}
+            {aptBalance !== null ? formatApt(aptBalance) : '0.0000 APT'}
           </div>
           <div className="flex items-center gap-2 text-blue-100">
-            <span className="text-sm">{account?.address.toString().slice(0, 20)}...</span>
-            <button
-              onClick={copyAddress}
-              className="p-1 hover:bg-white/20 rounded"
-            >
+            <span className="text-sm">{account?.address?.toString().slice(0, 20)}...</span>
+            <button onClick={copyAddress} className="p-1 hover:bg-white/20 rounded">
               <Copy className="w-4 h-4" />
             </button>
           </div>
         </div>
 
-        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
             onClick={() => setShowFundModal(true)}
@@ -137,7 +146,7 @@ export default function WalletPage() {
           </button>
 
           <button
-            onClick={() => toast.info('Send feature coming soon')}
+            onClick={() => toast.success('Send feature coming soon')}
             className="card p-6 text-center hover:shadow-md transition-shadow"
           >
             <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
@@ -148,7 +157,6 @@ export default function WalletPage() {
           </button>
         </div>
 
-        {/* Transaction History */}
         <div className="card">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
@@ -188,12 +196,8 @@ export default function WalletPage() {
                         {tx.type === 'purchase' && `Purchased ${tx.contentTitle}`}
                         {tx.type === 'sale' && `Sale: ${tx.contentTitle}`}
                       </p>
-                      {tx.from && (
-                        <p className="text-sm text-gray-500">From: {tx.from}</p>
-                      )}
-                      {tx.to && (
-                        <p className="text-sm text-gray-500">To: {tx.to}</p>
-                      )}
+                      {tx.from && <p className="text-sm text-gray-500">From: {tx.from}</p>}
+                      {tx.to && <p className="text-sm text-gray-500">To: {tx.to}</p>}
                       <p className="text-xs text-gray-400">{formatDate(tx.timestamp)}</p>
                     </div>
                   </div>
@@ -209,10 +213,9 @@ export default function WalletPage() {
           )}
         </div>
 
-        {/* View on Explorer */}
         <div className="mt-8 text-center">
           <a
-            href={`https://explorer.aptoslabs.com/account/${account?.address}?network=testnet`}
+            href={`https://explorer.aptoslabs.com/account/${account?.address.toString()}?network=testnet`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700"
@@ -223,14 +226,13 @@ export default function WalletPage() {
         </div>
       </div>
 
-      {/* Fund Modal */}
       <FiatOnramp
         isOpen={showFundModal}
         onClose={() => setShowFundModal(false)}
         onSuccess={() => {
           setShowFundModal(false);
           toast.success('Wallet funded successfully!');
-          fetchTransactions();
+          fetchBalance();
         }}
       />
     </div>
