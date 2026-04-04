@@ -78,9 +78,10 @@ export async function downloadBlob(
     });
     const chunks: Buffer[] = [];
     return new Promise((resolve, reject) => {
-      blob.stream.on('data', (chunk: Buffer) => chunks.push(chunk));
-      blob.stream.on('end', () => resolve(Buffer.concat(chunks)));
-      blob.stream.on('error', reject);
+      const readable = (blob as any).readable || (blob as any).stream;
+      readable.on('data', (chunk: Buffer) => chunks.push(chunk));
+      readable.on('end', () => resolve(Buffer.concat(chunks)));
+      readable.on('error', reject);
     });
   } catch (error) {
     console.error('Shelby download error:', error);
