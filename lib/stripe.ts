@@ -65,9 +65,10 @@ async function convertUsdToApt(usdAmount: number): Promise<number> {
 
 async function fundUserWallet(address: string, amountOctas: number) {
   // Use platform treasury wallet to send APT
-  const treasuryAccount = await aptos.deriveAccountFromPrivateKey({
-    privateKey: process.env.TREASURY_PRIVATE_KEY!,
-  });
+  const { Ed25519PrivateKey } = await import('@aptos-labs/ts-sdk');
+    const treasuryAccount = await aptos.deriveAccountFromPrivateKey({
+      privateKey: new Ed25519PrivateKey(process.env.TREASURY_PRIVATE_KEY!),
+    });
 
   const transaction = await aptos.transaction.build.simple({
     sender: treasuryAccount.accountAddress,
