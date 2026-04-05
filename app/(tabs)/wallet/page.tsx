@@ -41,33 +41,30 @@ export default function WalletPage() {
 
       // Fetch APT balance
       const aptRes = await fetch(
-        `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
+        `https://api.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
       );
       if (aptRes.ok) {
         const data = await aptRes.json();
         setAptBalance(Number(data.data.coin.value));
       }
 
-      // Fetch ShelbyUSD balance
-      // ShelbyUSD is a fungible asset on Aptos testnet
+      // Fetch ShelbyUSD as fungible asset
       try {
-        const shelbyDeployer = '0x85fdb9a176ab8ef1d9d9c1b60d60b3924f0800ac1de1cc2085fb0b8bb4988e6a';
-        const shelbyRes = await fetch(
-          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resources`
+        const shelbyMetadata = '0x1b18363a9f1fe5e6ebf247daba5cc1c18052bb232efdc4c50f556053922d98e1';
+        const faRes = await fetch(
+          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::primary_fungible_store::PrimaryStore<${shelbyMetadata}>`
         );
         if (shelbyRes.ok) {
-          const resources = await shelbyRes.json();
-          // Look for ShelbyUSD fungible asset store
-          const shelbyStore = resources.find((r: any) =>
-            r.type?.includes(shelbyDeployer) ||
-            r.type?.toLowerCase().includes('shelbyusd') ||
-            r.type?.toLowerCase().includes('shelby_usd')
+          const data = await faRes.json();
+          setShelbyBalance(Number(data.data?.balance || 0));
+        } else {
+          // Try alternate FA endpoint
+          const faRes2 = await fetch(
+            `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::fungible_asset::FungibleStore`
           );
-          if (shelbyStore) {
-            const val = shelbyStore.data?.balance ||
-                        shelbyStore.data?.coin?.value ||
-                        shelbyStore.data?.amount || 0;
-            setShelbyBalance(Number(val));
+          if (faRes2.ok) {
+            const data = await faRes2.json();
+            setShelbyBalance(Number(data.data?.balance || 0));
           } else {
             setShelbyBalance(0);
           }
