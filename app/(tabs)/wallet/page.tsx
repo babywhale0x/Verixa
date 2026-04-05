@@ -51,6 +51,7 @@ export default function WalletPage() {
       // Fetch ShelbyUSD balance
       // ShelbyUSD is a fungible asset on Aptos testnet
       try {
+        const shelbyDeployer = '0x85fdb9a176ab8ef1d9d9c1b60d60b3924f0800ac1de1cc2085fb0b8bb4988e6a';
         const shelbyRes = await fetch(
           `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resources`
         );
@@ -58,12 +59,15 @@ export default function WalletPage() {
           const resources = await shelbyRes.json();
           // Look for ShelbyUSD fungible asset store
           const shelbyStore = resources.find((r: any) =>
-            r.type?.includes('shelby') ||
-            r.type?.includes('ShelbyUSD') ||
-            r.type?.includes('85fdb9a')
+            r.type?.includes(shelbyDeployer) ||
+            r.type?.toLowerCase().includes('shelbyusd') ||
+            r.type?.toLowerCase().includes('shelby_usd')
           );
           if (shelbyStore) {
-            setShelbyBalance(Number(shelbyStore.data?.balance || shelbyStore.data?.coin?.value || 0));
+            const val = shelbyStore.data?.balance ||
+                        shelbyStore.data?.coin?.value ||
+                        shelbyStore.data?.amount || 0;
+            setShelbyBalance(Number(val));
           } else {
             setShelbyBalance(0);
           }
