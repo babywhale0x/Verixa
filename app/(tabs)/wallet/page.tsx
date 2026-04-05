@@ -52,22 +52,13 @@ export default function WalletPage() {
       try {
         const shelbyMetadata = '0x1b18363a9f1fe5e6ebf247daba5cc1c18052bb232efdc4c50f556053922d98e1';
         const faRes = await fetch(
-          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::primary_fungible_store::PrimaryStore<${shelbyMetadata}>`
+          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::primary_fungible_store::PrimaryStore%3C${shelbyMetadata}%3E`
         );
-        if (shelbyRes.ok) {
+        if (faRes.ok) {
           const data = await faRes.json();
           setShelbyBalance(Number(data.data?.balance || 0));
         } else {
-          // Try alternate FA endpoint
-          const faRes2 = await fetch(
-            `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::fungible_asset::FungibleStore`
-          );
-          if (faRes2.ok) {
-            const data = await faRes2.json();
-            setShelbyBalance(Number(data.data?.balance || 0));
-          } else {
-            setShelbyBalance(0);
-          }
+          setShelbyBalance(0);
         }
       } catch {
         setShelbyBalance(0);
