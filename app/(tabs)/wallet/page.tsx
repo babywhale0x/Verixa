@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { Wallet, ArrowDownLeft, ArrowUpRight, History, Plus, Copy, ExternalLink } from 'lucide-react';
-import { formatApt, octasToApt } from '@/lib/aptos';
+import { formatApt } from '@/lib/aptos';
 import { FiatOnramp } from '@/components/wallet/FiatOnramp';
 import toast from 'react-hot-toast';
 
@@ -23,31 +23,64 @@ export default function WalletPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [aptBalance, setAptBalance] = useState<number | null>(null);
+  const [shelbyBalance, setShelbyBalance] = useState<number | null>(null);
+  const [isLoadingBalances, setIsLoadingBalances] = useState(false);
 
   useEffect(() => {
     if (connected && account) {
-      fetchBalance();
+      fetchBalances();
       fetchTransactions();
     }
   }, [connected, account]);
 
-  const fetchBalance = async () => {
+  const fetchBalances = async () => {
+    if (!account) return;
+    setIsLoadingBalances(true);
     try {
-      const response = await fetch(
-        `https://fullnode.testnet.aptoslabs.com/v1/accounts/${account?.address.toString()}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
+      const address = account.address.toString();
+
+      // Fetch APT balance
+      const aptRes = await fetch(
+        `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
       );
-      if (response.ok) {
-        const data = await response.json();
+      if (aptRes.ok) {
+        const data = await aptRes.json();
         setAptBalance(Number(data.data.coin.value));
       }
+
+      // Fetch ShelbyUSD balance
+      // ShelbyUSD is a fungible asset on Aptos testnet
+      try {
+        const shelbyRes = await fetch(
+          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resources`
+        );
+        if (shelbyRes.ok) {
+          const resources = await shelbyRes.json();
+          // Look for ShelbyUSD fungible asset store
+          const shelbyStore = resources.find((r: any) =>
+            r.type?.includes('shelby') ||
+            r.type?.includes('ShelbyUSD') ||
+            r.type?.includes('85fdb9a')
+          );
+          if (shelbyStore) {
+            setShelbyBalance(Number(shelbyStore.data?.balance || shelbyStore.data?.coin?.value || 0));
+          } else {
+            setShelbyBalance(0);
+          }
+        }
+      } catch {
+        setShelbyBalance(0);
+      }
     } catch (error) {
-      console.error('Failed to fetch balance:', error);
+      console.error('Failed to fetch balances:', error);
+    } finally {
+      setIsLoadingBalances(false);
     }
   };
 
   const fetchTransactions = async () => {
     try {
-      const mockTransactions: Transaction[] = [
+      setTransactions([
         {
           id: '1',
           type: 'receive',
@@ -62,8 +95,7 @@ export default function WalletPage() {
           contentTitle: 'Summer Vibes EP',
           timestamp: new Date(Date.now() - 172800000).toISOString(),
         },
-      ];
-      setTransactions(mockTransactions);
+      ]);
     } catch (error) {
       console.error('Failed to fetch transactions:', error);
     } finally {
@@ -79,13 +111,16 @@ export default function WalletPage() {
   };
 
   const formatDate = (timestamp: string) => {
-    const date = new Date(timestamp);
-    return date.toLocaleDateString('en-US', {
+    return new Date(timestamp).toLocaleDateString('en-US', {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit',
     });
+  };
+
+  const formatShelby = (amount: number) => {
+    return `${(amount / 1000000).toFixed(4)} SUSD`;
   };
 
   if (!connected) {
@@ -106,33 +141,75 @@ export default function WalletPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <h1 className="text-xl font-bold">Wallet</h1>
+            <button
+              onClick={fetchBalances}
+              className="text-sm text-blue-600 hover:text-blue-700"
+            >
+              Refresh
+            </button>
           </div>
         </div>
       </header>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="card p-8 mb-8 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-blue-100">Total Balance</span>
-            <button
-              onClick={() => setShowFundModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 rounded-lg hover:bg-white/30 transition-colors"
-            >
-              <Plus className="w-4 h-4" />
-              Add Funds
-            </button>
+
+        {/* Balance Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+          {/* APT Balance */}
+          <div className="card p-6 bg-gradient-to-br from-blue-600 to-purple-600 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-blue-100 text-sm">APT Balance</span>
+              <button
+                onClick={() => setShowFundModal(true)}
+                className="flex items-center gap-1 px-3 py-1 bg-white/20 rounded-lg hover:bg-white/30 transition-colors text-sm"
+              >
+                <Plus className="w-3 h-3" />
+                Add
+              </button>
+            </div>
+            <div className="text-3xl font-bold mb-2">
+              {isLoadingBalances ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                aptBalance !== null ? formatApt(aptBalance) : '0.0000 APT'
+              )}
+            </div>
+            <div className="flex items-center gap-2 text-blue-100">
+              <span className="text-xs font-mono">{account?.address?.toString().slice(0, 20)}...</span>
+              <button onClick={copyAddress} className="p-1 hover:bg-white/20 rounded">
+                <Copy className="w-3 h-3" />
+              </button>
+            </div>
           </div>
-          <div className="text-4xl font-bold mb-2">
-            {aptBalance !== null ? formatApt(aptBalance) : '0.0000 APT'}
-          </div>
-          <div className="flex items-center gap-2 text-blue-100">
-            <span className="text-sm">{account?.address?.toString().slice(0, 20)}...</span>
-            <button onClick={copyAddress} className="p-1 hover:bg-white/20 rounded">
-              <Copy className="w-4 h-4" />
-            </button>
+
+          {/* ShelbyUSD Balance */}
+          <div className="card p-6 bg-gradient-to-br from-emerald-500 to-teal-600 text-white">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-emerald-100 text-sm">ShelbyUSD Balance</span>
+              <a
+                href="https://discord.gg/shelbyprotocol"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 px-3 py-1 bg-white/20 rounded-lg hover:bg-white/30 transition-colors text-sm"
+              >
+                <Plus className="w-3 h-3" />
+                Get
+              </a>
+            </div>
+            <div className="text-3xl font-bold mb-2">
+              {isLoadingBalances ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                shelbyBalance !== null ? formatShelby(shelbyBalance) : '0.0000 SUSD'
+              )}
+            </div>
+            <div className="text-emerald-100 text-xs">
+              Used for Shelby storage payments
+            </div>
           </div>
         </div>
 
+        {/* Quick Actions */}
         <div className="grid grid-cols-2 gap-4 mb-8">
           <button
             onClick={() => setShowFundModal(true)}
@@ -157,6 +234,7 @@ export default function WalletPage() {
           </button>
         </div>
 
+        {/* Transaction History */}
         <div className="card">
           <div className="p-6 border-b border-gray-200">
             <div className="flex items-center gap-2">
@@ -232,7 +310,7 @@ export default function WalletPage() {
         onSuccess={() => {
           setShowFundModal(false);
           toast.success('Wallet funded successfully!');
-          fetchBalance();
+          fetchBalances();
         }}
       />
     </div>
