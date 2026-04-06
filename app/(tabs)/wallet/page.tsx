@@ -51,12 +51,34 @@ export default function WalletPage() {
       // Fetch ShelbyUSD as fungible asset
       try {
         const shelbyMetadata = '0x1b18363a9f1fe5e6ebf247daba5cc1c18052bb232efdc4c50f556053922d98e1';
-        const faRes = await fetch(
-          `https://fullnode.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::primary_fungible_store::PrimaryStore%3C${shelbyMetadata}%3E`
+        const indexerRes = await fetch(
+          'https://api.testnet.aptoslabs.com/v1/graphql',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              query: `{
+                current_fungible_asset_balances(
+                  where: {
+                    owner_address: {_eq: "${address}"},
+                    asset_type: {_eq: "${shelbyMetadata}"}
+                  }
+                ) {
+                  amount
+                  asset_type
+                }
+              }`
+            })
+          }
         );
-        if (faRes.ok) {
-          const data = await faRes.json();
-          setShelbyBalance(Number(data.data?.balance || 0));
+        if (indexerRes.ok) {
+          const result = await indexerRes.json();
+          const balances = result?.data?.current_fungible_asset_balances;
+          if (balances && balances.length > 0) {
+            setShelbyBalance(Number(balances[0].amount));
+          } else {
+            setShelbyBalance(0);
+          }
         } else {
           setShelbyBalance(0);
         }
