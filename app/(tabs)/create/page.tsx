@@ -1,14 +1,16 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useDropzone } from 'react-dropzone';
 import {
   Upload, Image, Video, Music, FileText, Loader2,
-  DollarSign, Tag, Eye, Download, Crown, X, Check
+  Tag, Eye, Download, Crown, X, Check, Lock, Droplets
 } from 'lucide-react';
 import { aptToOctas, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMMERCIAL, TIER_SUBSCRIPTION } from '@/lib/aptos';
 import toast from 'react-hot-toast';
+
+type ImagePreviewMode = 'blur' | 'watermark';
 
 interface PricingTier {
   enabled: boolean;
@@ -34,8 +36,13 @@ export default function CreatePage() {
   const { connected, account, signAndSubmitTransaction } = useWallet();
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [generatedPreviewUrl, setGeneratedPreviewUrl] = useState<string | null>(null);
+  const [imagePreviewMode, setImagePreviewMode] = useState<ImagePreviewMode>('blur');
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [isGeneratingPreview, setIsGeneratingPreview] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -62,16 +69,76 @@ export default function CreatePage() {
     });
   };
 
-  const onDrop = useCallback((acceptedFiles: File[]) => {
+  const generateImagePreview = useCallback(async (selectedFile: File, mode: ImagePreviewMode): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = new window.Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const MAX = 800;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d')!;
+
+        if (mode === 'blur') {
+          ctx.filter = 'blur(18px)';
+        }
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        ctx.filter = 'none';
+
+        // Watermark
+        const wText = '🔒 Verixa';
+        const fontSize = Math.max(16, canvas.width / 18);
+        ctx.font = `bold ${fontSize}px Inter, sans-serif`;
+        ctx.fillStyle = 'rgba(255,255,255,0.85)';
+        ctx.textAlign = 'center';
+        ctx.shadowColor = 'rgba(0,0,0,0.6)';
+        ctx.shadowBlur = 8;
+        ctx.fillText(wText, canvas.width / 2, canvas.height / 2);
+
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.onerror = reject;
+      img.src = URL.createObjectURL(selectedFile);
+    });
+  }, []);
+
+  const onDrop = useCallback(async (acceptedFiles: File[]) => {
     if (acceptedFiles.length > 0) {
       const selectedFile = acceptedFiles[0];
       setFile(selectedFile);
+      setPreviewFile(null);
+      setGeneratedPreviewUrl(null);
       if (selectedFile.type.startsWith('image/') || selectedFile.type.startsWith('video/')) {
         const url = URL.createObjectURL(selectedFile);
         setPreview(url);
       }
+      if (selectedFile.type.startsWith('image/')) {
+        setIsGeneratingPreview(true);
+        try {
+          const dataUrl = await generateImagePreview(selectedFile, imagePreviewMode);
+          setGeneratedPreviewUrl(dataUrl);
+        } catch (e) {
+          console.error('Preview generation failed', e);
+        } finally {
+          setIsGeneratingPreview(false);
+        }
+      }
     }
-  }, []);
+  }, [imagePreviewMode, generateImagePreview]);
+
+  const handlePreviewModeChange = useCallback(async (mode: ImagePreviewMode) => {
+    setImagePreviewMode(mode);
+    if (file && file.type.startsWith('image/')) {
+      setIsGeneratingPreview(true);
+      try {
+        const dataUrl = await generateImagePreview(file, mode);
+        setGeneratedPreviewUrl(dataUrl);
+      } finally {
+        setIsGeneratingPreview(false);
+      }
+    }
+  }, [file, generateImagePreview]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -152,6 +219,35 @@ export default function CreatePage() {
       });
 
       toast.loading('Saving metadata...', { id: 'upload' });
+
+      // Upload preview
+      let previewUrl: string | null = null;
+      if (file.type.startsWith('image/') && generatedPreviewUrl) {
+        previewUrl = generatedPreviewUrl;
+        await fetch('/api/upload/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            walletAddress: account.address.toString(),
+            blobId: blobName,
+            previewDataUrl: generatedPreviewUrl,
+          }),
+        });
+      } else if (previewFile) {
+        const previewFormData = new FormData();
+        previewFormData.append('previewFile', previewFile);
+        previewFormData.append('walletAddress', account.address.toString());
+        previewFormData.append('blobId', blobName);
+        const previewRes = await fetch('/api/upload/preview', {
+          method: 'POST',
+          body: previewFormData,
+        });
+        if (previewRes.ok) {
+          const previewData = await previewRes.json();
+          previewUrl = previewData.previewUrl;
+        }
+      }
+
       await fetch('/api/upload/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -164,6 +260,7 @@ export default function CreatePage() {
           isPublic: true,
           description,
           categories: selectedCategories,
+          previewUrl,
         }),
       });
 
@@ -211,6 +308,8 @@ export default function CreatePage() {
       toast.success('Content published successfully!', { id: 'upload' });
       setFile(null);
       setPreview(null);
+      setGeneratedPreviewUrl(null);
+      setPreviewFile(null);
       setTitle('');
       setDescription('');
       setTags('');
@@ -276,24 +375,118 @@ export default function CreatePage() {
                   <p className="text-sm text-gray-500 mt-1">or click to browse</p>
                 </div>
               ) : (
-                <div className="relative">
+                <div className="space-y-4">
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
                     {getFileIcon()}
                     <div className="flex-1 min-w-0">
                       <p className="font-medium truncate">{file.name}</p>
                       <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                     </div>
-                    <button onClick={() => { setFile(null); setPreview(null); }} className="text-red-600 hover:text-red-700">
+                    <button onClick={() => { setFile(null); setPreview(null); setGeneratedPreviewUrl(null); setPreviewFile(null); }} className="text-red-600 hover:text-red-700 text-sm">
                       Remove
                     </button>
                   </div>
+
+                  {/* Original preview */}
                   {preview && (
-                    <div className="mt-4">
+                    <div>
                       {file.type.startsWith('image/') ? (
-                        <img src={preview} alt="Preview" className="max-h-64 rounded-lg w-full object-cover" />
+                        <img src={preview} alt="Original" className="max-h-48 rounded-lg w-full object-cover" />
                       ) : file.type.startsWith('video/') ? (
-                        <video src={preview} className="max-h-64 rounded-lg w-full" controls />
+                        <video src={preview} className="max-h-48 rounded-lg w-full" controls />
                       ) : null}
+                    </div>
+                  )}
+
+                  {/* Image: preview mode selector + generated preview */}
+                  {file.type.startsWith('image/') && (
+                    <div className="border rounded-xl p-4 space-y-3 bg-blue-50 border-blue-200">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-semibold text-blue-800">Buyer Preview Style</p>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handlePreviewModeChange('blur')}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              imagePreviewMode === 'blur'
+                                ? 'bg-blue-600 text-white shadow'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400'
+                            }`}
+                          >
+                            <Droplets className="w-3.5 h-3.5" /> Blur
+                          </button>
+                          <button
+                            onClick={() => handlePreviewModeChange('watermark')}
+                            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                              imagePreviewMode === 'watermark'
+                                ? 'bg-blue-600 text-white shadow'
+                                : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400'
+                            }`}
+                          >
+                            <Lock className="w-3.5 h-3.5" /> Watermark only
+                          </button>
+                        </div>
+                      </div>
+                      {isGeneratingPreview ? (
+                        <div className="flex items-center justify-center gap-2 py-6 text-blue-600">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm">Generating preview...</span>
+                        </div>
+                      ) : generatedPreviewUrl ? (
+                        <div className="relative">
+                          <img src={generatedPreviewUrl} alt="Generated preview" className="w-full rounded-lg object-cover max-h-40" />
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <span className="bg-black/60 text-white text-xs px-2 py-1 rounded-full">
+                              Preview buyers will see
+                            </span>
+                          </div>
+                        </div>
+                      ) : null}
+                    </div>
+                  )}
+
+                  {/* Audio / Video / Doc: optional short preview upload */}
+                  {(file.type.startsWith('audio/') || file.type.startsWith('video/') || file.type.includes('pdf') || file.type.includes('document')) && (
+                    <div className="border rounded-xl p-4 space-y-2 bg-purple-50 border-purple-200">
+                      <p className="text-sm font-semibold text-purple-800">
+                        {file.type.startsWith('audio/') && '🎵 Upload a preview clip (max 30s) — Optional'}
+                        {file.type.startsWith('video/') && '🎬 Upload a trailer / teaser (max 60s) — Optional'}
+                        {(file.type.includes('pdf') || file.type.includes('document')) && '📄 Upload a preview image (e.g. first page) — Optional'}
+                      </p>
+                      <p className="text-xs text-purple-600">This will be shown publicly to buyers before purchase. The main file stays encrypted and gated.</p>
+                      <label className="block">
+                        <div className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition-colors ${
+                          previewFile ? 'border-purple-400 bg-purple-100' : 'border-purple-300 hover:border-purple-400'
+                        }`}>
+                          <input
+                            type="file"
+                            className="hidden"
+                            accept={
+                              file.type.startsWith('audio/') ? 'audio/*' :
+                              file.type.startsWith('video/') ? 'video/*' :
+                              'image/*'
+                            }
+                            onChange={(e) => {
+                              const f = e.target.files?.[0];
+                              if (f) setPreviewFile(f);
+                            }}
+                          />
+                          {previewFile ? (
+                            <div className="flex items-center justify-center gap-2 text-purple-700">
+                              <Check className="w-4 h-4" />
+                              <span className="text-sm font-medium">{previewFile.name}</span>
+                              <button
+                                type="button"
+                                onClick={(e) => { e.preventDefault(); setPreviewFile(null); }}
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span className="text-sm text-purple-600">Click to choose preview file</span>
+                          )}
+                        </div>
+                      </label>
                     </div>
                   )}
                 </div>

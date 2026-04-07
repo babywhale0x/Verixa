@@ -57,6 +57,7 @@ model File {
   name          String
   description   String?
   thumbnailUrl  String?
+  previewUrl    String?
   isPublic      Boolean  @default(false)
   isPublished   Boolean  @default(false)
   contentId     BigInt?

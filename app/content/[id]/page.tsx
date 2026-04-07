@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Heart, Share2, Download, Eye, Clock, Shield, Loader2 } from 'lucide-react';
+import { Heart, Share2, Download, Eye, Clock, Shield, Loader2, Lock, Music, Video, FileText } from 'lucide-react';
 import { formatApt, getTierName, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMMERCIAL } from '@/lib/aptos';
 import toast from 'react-hot-toast';
 
@@ -14,6 +14,7 @@ interface ContentDetail {
   description: string;
   contentType: string;
   previewBlobId: string;
+  previewUrl?: string;
   viewPrice: bigint;
   borrowPrice: bigint;
   licensePrice: bigint;
@@ -140,8 +141,47 @@ export default function ContentDetailPage() {
           {/* Left: Preview */}
           <div className="lg:col-span-2">
             <div className="card overflow-hidden mb-6">
-              <div className="aspect-video bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center">
-                <span className="text-white text-6xl">♪</span>
+              <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
+                {content.previewUrl ? (
+                  content.contentType.startsWith('audio/') ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 bg-gradient-to-br from-purple-900 to-pink-900">
+                      <Music className="w-16 h-16 text-purple-300" />
+                      <audio src={content.previewUrl} controls className="w-full max-w-sm" />
+                    </div>
+                  ) : content.contentType.startsWith('video/') ? (
+                    <video src={content.previewUrl} className="w-full h-full object-cover" controls />
+                  ) : (
+                    <img src={content.previewUrl} alt={content.title} className="w-full h-full object-cover" />
+                  )
+                ) : content.contentType.startsWith('audio/') ? (
+                  <div className="flex flex-col items-center gap-3 text-white">
+                    <Music className="w-16 h-16 text-purple-300" />
+                    <span className="text-purple-300 text-sm">Audio content</span>
+                  </div>
+                ) : content.contentType.startsWith('video/') ? (
+                  <div className="flex flex-col items-center gap-3 text-white">
+                    <Video className="w-16 h-16 text-blue-300" />
+                    <span className="text-blue-300 text-sm">Video content</span>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-3 text-white">
+                    <FileText className="w-16 h-16 text-gray-300" />
+                    <span className="text-gray-300 text-sm">Document</span>
+                  </div>
+                )}
+
+                {/* Lock overlay for non-purchasers */}
+                {!hasAccess && (
+                  <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
+                    <div className="bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-center">
+                      <Lock className="w-8 h-8 text-white mx-auto mb-2" />
+                      <p className="text-white font-semibold text-sm">Purchase to unlock full content</p>
+                      {content.previewUrl && (
+                        <p className="text-white/70 text-xs mt-1">↑ Preview only</p>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 

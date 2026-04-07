@@ -4,7 +4,7 @@ import { prisma } from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { walletAddress, blobId, name, contentType, size, isPublic, description } = body;
+    const { walletAddress, blobId, name, contentType, size, isPublic, description, previewUrl } = body;
 
     let user = await prisma.user.findUnique({ where: { walletAddress } });
     if (!user) {
@@ -22,8 +22,9 @@ export async function POST(request: NextRequest) {
         encrypted: false,
         isPublic: isPublic || false,
         description: description || null,
+        previewUrl: previewUrl || null,
       },
-      update: { isPublic: isPublic || false },
+      update: { isPublic: isPublic || false, previewUrl: previewUrl || undefined },
     });
 
     return NextResponse.json({ success: true });

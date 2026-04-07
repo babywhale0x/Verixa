@@ -12,6 +12,7 @@ interface Content {
   description: string;
   contentType: string;
   previewBlobId: string;
+  previewUrl?: string;
   viewPrice: bigint;
   licensePrice: bigint;
   tags: string[];
@@ -146,8 +147,20 @@ export default function ExplorePage() {
                 className="card overflow-hidden hover:shadow-lg transition-shadow"
               >
                 {/* Preview */}
-                <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                  {content.contentType.startsWith('image/') ? (
+                <div className="aspect-video bg-gray-100 flex items-center justify-center overflow-hidden relative">
+                  {content.previewUrl ? (
+                    content.contentType.startsWith('audio/') ? (
+                      <div className="w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 flex flex-col items-center justify-center gap-3 p-4">
+                        <Music className="w-10 h-10 text-purple-400" />
+                        {}  
+                        <audio src={content.previewUrl} controls className="w-full" />
+                      </div>
+                    ) : content.contentType.startsWith('video/') ? (
+                      <video src={content.previewUrl} className="w-full h-full object-cover" muted />
+                    ) : (
+                      <img src={content.previewUrl} alt={content.title} className="w-full h-full object-cover" />
+                    )
+                  ) : content.contentType.startsWith('image/') ? (
                     <div className="w-full h-full bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
                       <Image className="w-12 h-12 text-gray-400" />
                     </div>
@@ -158,6 +171,11 @@ export default function ExplorePage() {
                   ) : (
                     <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
                       {getContentIcon(content.contentType)}
+                    </div>
+                  )}
+                  {!content.previewUrl && (
+                    <div className="absolute inset-0 flex items-end justify-center pb-2">
+                      <span className="bg-black/50 text-white text-xs px-2 py-0.5 rounded-full">No preview</span>
                     </div>
                   )}
                 </div>
