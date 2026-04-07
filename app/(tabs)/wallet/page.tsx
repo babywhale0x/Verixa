@@ -43,10 +43,12 @@ export default function WalletPage() {
       const aptRes = await fetch(
         `https://api.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
       );
+      console.log('APT response status:', aptRes.status);
+      const aptData = await aptRes.json();
+      console.log('APT data:', JSON.stringify(aptData));
       if (aptRes.ok) {
-        const data = await aptRes.json();
-        setAptBalance(Number(data?.data?.coin?.value || 0));
-      } else {
+        setAptBalance(Number(aptData?.data?.coin?.value || 0));
+      }
         // Try GraphQL fallback
         const aptGql = await fetch('https://api.testnet.aptoslabs.com/v1/graphql', {
           method: 'POST',
