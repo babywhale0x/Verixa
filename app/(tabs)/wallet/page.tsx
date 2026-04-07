@@ -40,16 +40,28 @@ export default function WalletPage() {
       const address = account.address.toString();
 
       // Fetch APT balance
-      const aptRes = await fetch(
-        `https://api.testnet.aptoslabs.com/v1/accounts/${address}/resource/0x1::coin::CoinStore%3C0x1::aptos_coin::AptosCoin%3E`
-      );
-      console.log('APT response status:', aptRes.status);
-      const aptData = await aptRes.json();
-      console.log('APT data:', JSON.stringify(aptData));
-      if (aptRes.ok) {
-        setAptBalance(Number(aptData?.data?.coin?.value || 0));
+      const aptGql = await fetch('https://api.testnet.aptoslabs.com/v1/graphql', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: `{
+            current_fungible_asset_balances(
+              where: {
+                owner_address: {_eq: "${address}"},
+                asset_type: {_eq: "0x1::aptos_coin::AptosCoin"}
+              }
+            ) {
+              amount
+            }
+          }`
+        })
+      });
+      if (aptGql.ok) {
+        const result = await aptGql.json();
+        const bal = result?.data?.current_fungible_asset_balances?.[0]?.amount;
+        setAptBalance(Number(bal || 0));
       }
-
+      
       // Fetch ShelbyUSD as fungible asset
       try {
         const shelbyMetadata = '0x1b18363a9f1fe5e6ebf247daba5cc1c18052bb232efdc4c50f556053922d98e1';
