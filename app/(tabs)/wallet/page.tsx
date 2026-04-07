@@ -49,29 +49,6 @@ export default function WalletPage() {
       if (aptRes.ok) {
         setAptBalance(Number(aptData?.data?.coin?.value || 0));
       }
-        // Try GraphQL fallback
-        const aptGql = await fetch('https://api.testnet.aptoslabs.com/v1/graphql', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            query: `{
-              current_coin_balances(
-                where: {
-                  owner_address: {_eq: "${address}"},
-                  coin_type: {_eq: "0x1::aptos_coin::AptosCoin"}
-                }
-              ) {
-                amount
-              }
-            }`
-          })
-        });
-        if (aptGql.ok) {
-          const result = await aptGql.json();
-          const bal = result?.data?.current_coin_balances?.[0]?.amount;
-          setAptBalance(Number(bal || 0));
-        }
-      }
 
       // Fetch ShelbyUSD as fungible asset
       try {
