@@ -29,6 +29,9 @@ export default function VaultPage() {
     monthsRemaining: BigInt(0),
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [stagedFiles, setStagedFiles] = useState<File[]>([]);
+  const [stagedTitle, setStagedTitle] = useState('');
+  const [stagedDescription, setStagedDescription] = useState('');
   const [showFundModal, setShowFundModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -71,15 +74,29 @@ export default function VaultPage() {
     }
   };
 
-  const onDrop = useCallback(async (acceptedFiles: File[]) => {
+  const onDrop = useCallback((acceptedFiles: File[]) => {
     if (!connected) {
       toast.error('Please connect your wallet first');
       return;
     }
 
+    setStagedFiles(acceptedFiles);
+    setStagedTitle('');
+    setStagedDescription('');
+  }, [connected]);
+
+  const handleConfirmUpload = async () => {
+    if (!connected || !account) return;
+    
     setIsUploading(true);
 
-    for (const file of acceptedFiles) {
+    for (let i = 0; i < stagedFiles.length; i++) {
+      const file = stagedFiles[i];
+      let finalName = file.name;
+      if (stagedTitle) {
+        finalName = i === 0 ? stagedTitle : `${stagedTitle} ${i + 1}`;
+      }
+
       try {
         // Step 1: Initiate upload
         const initResponse = await fetch('/api/upload', {
@@ -89,6 +106,7 @@ export default function VaultPage() {
             fileSize: file.size,
             contentType: file.type,
             encrypted: true,
+            walletAddress: account.address.toString(),
           }),
         });
 
@@ -109,9 +127,11 @@ export default function VaultPage() {
         formData.append('file', file);
         formData.append('metadata', JSON.stringify({
           blobId,
-          name: file.name,
+          name: finalName,
+          description: stagedDescription || null,
           contentType: file.type,
           isPublic: false,
+          walletAddress: account.address.toString(),
         }));
 
         const uploadResponse = await fetch('/api/upload/complete', {
@@ -123,17 +143,20 @@ export default function VaultPage() {
           throw new Error('Failed to upload file');
         }
 
-        toast.success(`Uploaded ${file.name}`);
+        toast.success(`Uploaded ${finalName}`);
       } catch (error) {
         console.error('Upload error:', error);
-        toast.error(`Failed to upload ${file.name}`);
+        toast.error(`Failed to upload ${finalName}`);
       }
     }
 
     setIsUploading(false);
+    setStagedFiles([]);
+    setStagedTitle('');
+    setStagedDescription('');
     fetchFiles();
     fetchStorageStats();
-  }, [connected]);
+  };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -240,28 +263,67 @@ export default function VaultPage() {
         </div>
 
         {/* Upload Area */}
-        <div
-          {...getRootProps()}
-          className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-8 ${
-            isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
-          }`}
-        >
-          <input {...getInputProps()} />
-          <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-          {isUploading ? (
-            <div className="flex items-center justify-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              <span>Uploading...</span>
+        {stagedFiles.length > 0 ? (
+          <div className="card p-6 mb-8 border border-blue-200 bg-blue-50">
+            <h2 className="text-lg font-semibold mb-4">Confirm Upload</h2>
+            <div className="space-y-4">
+              <p className="text-sm text-gray-600">{stagedFiles.length} file(s) selected.</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Base Name</label>
+                <input
+                  type="text"
+                  value={stagedTitle}
+                  onChange={(e) => setStagedTitle(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
+                  placeholder={stagedFiles[0].name}
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  If uploading multiple files, they will be numbered automatically (e.g., Name, Name 2). Leave blank to use original.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <textarea
+                  value={stagedDescription}
+                  onChange={(e) => setStagedDescription(e.target.value)}
+                  className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
+                  rows={2}
+                  placeholder="Shared description for these files"
+                />
+              </div>
+              <div className="flex gap-4 pt-2">
+                <button
+                  onClick={handleConfirmUpload}
+                  disabled={isUploading}
+                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2"
+                >
+                  {isUploading ? <><Loader2 className="w-5 h-5 animate-spin"/> Uploading...</> : 'Upload to Vault'}
+                </button>
+                <button
+                  onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
+                  disabled={isUploading}
+                  className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 disabled:opacity-50 font-medium"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
-          ) : (
-            <>
-              <p className="text-lg font-medium">
-                {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">or click to browse</p>
-            </>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div
+            {...getRootProps()}
+            className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-8 ${
+              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+            }`}
+          >
+            <input {...getInputProps()} />
+            <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
+            <p className="text-lg font-medium">
+              {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
+            </p>
+            <p className="text-sm text-gray-500 mt-1">or click to browse</p>
+          </div>
+        )}
 
         {/* File List */}
         {isLoading ? (

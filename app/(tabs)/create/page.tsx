@@ -121,7 +121,9 @@ export default function CreatePage() {
       const config = defaultErasureCodingConfig();
 
       toast.loading('Registering on blockchain...', { id: 'upload' });
-      const blobName = `verixa-${Date.now()}-${file.name}`;
+      const safeTitle = title.toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+      const baseName = safeTitle || file.name.toLowerCase().replace(/[^a-z0-9.]/g, '-');
+      const blobName = `verixa-${Date.now()}-${baseName}`;
 
       const payload = ShelbyBlobClient.createRegisterBlobPayload({
         account: account.address as any,
