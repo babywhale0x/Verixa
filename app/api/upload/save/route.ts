@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
       licensePrice,
       commercialPrice,
       subscriptionPrice,
+      onChainContentId,
     } = body;
 
     let user = await prisma.user.findUnique({ where: { walletAddress } });
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
         encryptionKey: encryptionKey || null,
         isPublic: isPublic || false,
         isPublished,
+        contentId: onChainContentId ? BigInt(onChainContentId) : null,
         publishedAt: isPublished ? new Date() : null,
         description: description || null,
         previewUrl: previewUrl || null,
@@ -59,6 +61,7 @@ export async function POST(request: NextRequest) {
       update: {
         isPublic: isPublic || false,
         isPublished,
+        contentId: onChainContentId ? BigInt(onChainContentId) : undefined,
         publishedAt: isPublished ? new Date() : undefined,
         previewUrl: previewUrl || undefined,
       },
@@ -66,7 +69,8 @@ export async function POST(request: NextRequest) {
 
     // If marketplace content, also upsert into Content table for browsing
     if (isPublished) {
-      const contentId = BigInt(Date.now()); // Use timestamp as unique ID
+      // Use the real on-chain content ID from the smart contract
+      const contentId = onChainContentId ? BigInt(onChainContentId) : BigInt(Date.now());
       await prisma.content.upsert({
         where: { id: contentId },
         create: {

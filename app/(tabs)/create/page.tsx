@@ -263,7 +263,30 @@ export default function CreatePage() {
             if (previewRes.ok) previewUrl = (await previewRes.json()).previewUrl;
           }
 
-          // Save metadata + pricing + encryption key
+          // Publish to marketplace FIRST to get the on-chain content ID
+          const root = commitments.blob_merkle_root;
+          const rootBytes = typeof root === 'string'
+            ? Array.from(Buffer.from(root.startsWith('0x') ? root.slice(2) : root, 'hex'))
+            : Array.from(root as Uint8Array);
+
+          const publishTx = await signAndSubmitTransaction({
+            data: {
+              function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::publish_content` as `${string}::${string}::${string}`,
+              functionArguments: [finalTitle, description, file.type, blobName, rootBytes, blobName,
+                viewPrice, borrowPrice, licensePrice, commercialPrice, subscriptionPrice, tagList, 0],
+              typeArguments: [],
+            },
+          });
+          await aptosClient.waitForTransaction({ transactionHash: publishTx.hash });
+
+          // Get the actual on-chain content ID assigned by the contract
+          const { getCreatorContents } = await import('@/lib/contract-queries');
+          const contentIds = await getCreatorContents(account.address.toString());
+          const onChainContentId = contentIds.length > 0
+            ? contentIds[contentIds.length - 1].toString()
+            : Date.now().toString();
+
+          // NOW save metadata + pricing + encryption key with the real on-chain content ID
           await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -285,22 +308,8 @@ export default function CreatePage() {
               licensePrice,
               commercialPrice,
               subscriptionPrice,
+              onChainContentId,
             }),
-          });
-
-          // Publish to marketplace
-          const root = commitments.blob_merkle_root;
-          const rootBytes = typeof root === 'string'
-            ? Array.from(Buffer.from(root.startsWith('0x') ? root.slice(2) : root, 'hex'))
-            : Array.from(root as Uint8Array);
-
-          await signAndSubmitTransaction({
-            data: {
-              function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::publish_content` as `${string}::${string}::${string}`,
-              functionArguments: [finalTitle, description, file.type, blobName, rootBytes, blobName,
-                viewPrice, borrowPrice, licensePrice, commercialPrice, subscriptionPrice, tagList, 0],
-              typeArguments: [],
-            },
           });
 
           toast.success(`Published: ${finalTitle}`, { id: 'upload' });
