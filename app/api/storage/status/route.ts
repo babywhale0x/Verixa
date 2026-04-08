@@ -8,22 +8,30 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const wallet = searchParams.get('wallet');
 
-    let user = await auth();
+    let targetUserId = '';
+    let targetWallet = '';
 
-    if (!user && wallet) {
+    if (wallet) {
       const dbUser = await prisma.user.findUnique({ where: { walletAddress: wallet }});
       if (dbUser) {
-        user = { id: dbUser.id, walletAddress: dbUser.walletAddress };
+        targetUserId = dbUser.id;
+        targetWallet = dbUser.walletAddress;
+      }
+    } else {
+      const user = await auth();
+      if (user) {
+        targetUserId = user.id;
+        targetWallet = user.walletAddress;
       }
     }
 
-    if (!user) {
+    if (!targetUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // Aggregate total size from user's files
     const fileStats = await prisma.file.aggregate({
-      where: { userId: user.id },
+      where: { userId: targetUserId },
       _sum: { size: true },
     });
     const totalBytes = fileStats._sum.size || BigInt(0);
@@ -36,7 +44,7 @@ export async function GET(request: NextRequest) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-           query: `{ current_fungible_asset_balances(where: {owner_address: {_eq: "${user.walletAddress}"}, asset_type: {_eq: "${shelbyMetadata}"}}) { amount } }`
+           query: `{ current_fungible_asset_balances(where: {owner_address: {_eq: "${targetWallet}"}, asset_type: {_eq: "${shelbyMetadata}"}}) { amount } }`
         })
       });
       const indexerData = await response.json();
@@ -58,7 +66,7 @@ export async function GET(request: NextRequest) {
       : BigInt(0);
 
     // Also get from blockchain for grace period
-    const chainStorage = await getUserStorage(user.walletAddress);
+    const chainStorage = await getUserStorage(targetWallet);
 
     return NextResponse.json({
       totalBytes: totalBytes.toString(),

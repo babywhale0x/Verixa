@@ -257,11 +257,29 @@ export default function VaultPage() {
     return <FileText className="w-5 h-5" />;
   };
 
-  const getDaysUntilExpiry = (createdAt: string) => {
-    const expiryDate = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
-    const diffTime = Math.max(0, expiryDate.getTime() - Date.now());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    return diffDays;
+  const ExpiryTimer = ({ createdAt }: { createdAt: string }) => {
+    const [timeLeft, setTimeLeft] = useState('');
+
+    useEffect(() => {
+      const calculateTime = () => {
+        const expiryDate = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
+        const diffTime = Math.max(0, expiryDate.getTime() - Date.now());
+        if (diffTime === 0) return 'Expired';
+        
+        const d = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diffTime % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diffTime % (1000 * 60)) / 1000);
+        
+        return `${d}d ${h}h ${m}m ${s}s`;
+      };
+
+      setTimeLeft(calculateTime());
+      const interval = setInterval(() => setTimeLeft(calculateTime()), 1000);
+      return () => clearInterval(interval);
+    }, [createdAt]);
+
+    return <span>{timeLeft}</span>;
   };
 
   if (!connected) {
@@ -295,7 +313,7 @@ export default function VaultPage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Storage Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="card p-4">
             <p className="text-sm text-gray-600">Storage Used</p>
             <p className="text-2xl font-bold">{formatFileSize(storageStats.totalBytes)}</p>
@@ -308,12 +326,8 @@ export default function VaultPage() {
             </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Monthly Cost (Estimated)</p>
-            <p className="text-2xl font-bold">{(Number(storageStats.monthlyCost) / 1e8).toFixed(4)} SUSD</p>
-          </div>
-          <div className="card p-4">
-            <p className="text-sm text-gray-600">Months Remaining</p>
-            <p className="text-2xl font-bold">{storageStats.monthsRemaining.toString()}</p>
+            <p className="text-sm text-gray-600">Average Yearly Cost</p>
+            <p className="text-2xl font-bold">{((Number(storageStats.totalBytes) / 1073741824) * 0.012).toFixed(4)} SUSD</p>
           </div>
         </div>
 
@@ -448,6 +462,7 @@ export default function VaultPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">File</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Size</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Yearly Fee</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Type</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Status</th>
                   <th className="px-6 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
@@ -465,6 +480,9 @@ export default function VaultPage() {
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatFileSize(file.size)}
                     </td>
+                    <td className="px-6 py-4 text-sm text-gray-600 font-medium text-green-600">
+                      {((Math.ceil(Number(file.size) / 1073741824) * 1200000) / 1e8).toFixed(4)} SUSD
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {file.contentType}
                     </td>
@@ -478,7 +496,7 @@ export default function VaultPage() {
                           </span>
                         </div>
                         <div className="text-xs text-orange-500 font-medium">
-                          Expires in {getDaysUntilExpiry(file.createdAt)}d
+                          Expires in: <ExpiryTimer createdAt={file.createdAt} />
                         </div>
                       </div>
                     </td>

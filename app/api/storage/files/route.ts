@@ -7,22 +7,29 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const wallet = searchParams.get('wallet');
 
-    let user = await auth();
-    
-    // If no session but wallet param is provided, fetch user by wallet
-    if (!user && wallet) {
+    let targetUserId = '';
+    let targetWallet = '';
+
+    if (wallet) {
       const dbUser = await prisma.user.findUnique({ where: { walletAddress: wallet }});
       if (dbUser) {
-        user = { id: dbUser.id, walletAddress: dbUser.walletAddress };
+        targetUserId = dbUser.id;
+        targetWallet = dbUser.walletAddress;
+      }
+    } else {
+      const user = await auth();
+      if (user) {
+        targetUserId = user.id;
+        targetWallet = user.walletAddress;
       }
     }
 
-    if (!user) {
+    if (!targetUserId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const files = await prisma.file.findMany({
-      where: { userId: user.id },
+      where: { userId: targetUserId },
       orderBy: { createdAt: 'desc' },
       select: {
         id: true,
