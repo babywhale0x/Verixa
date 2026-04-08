@@ -257,6 +257,13 @@ export default function VaultPage() {
     return <FileText className="w-5 h-5" />;
   };
 
+  const getDaysUntilExpiry = (createdAt: string) => {
+    const expiryDate = new Date(new Date(createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
+    const diffTime = Math.max(0, expiryDate.getTime() - Date.now());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
   if (!connected) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -294,12 +301,15 @@ export default function VaultPage() {
             <p className="text-2xl font-bold">{formatFileSize(storageStats.totalBytes)}</p>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Wallet Balance</p>
-            <p className="text-2xl font-bold">{formatApt(Number(storageStats.walletBalance))}</p>
+            <p className="text-sm text-gray-600">ShelbyUSD Balance</p>
+            <div className="flex items-center gap-2 mt-1">
+              <div className="w-2 h-2 rounded-full bg-green-500" />
+              <p className="text-2xl font-bold">{(Number(storageStats.walletBalance) / 1e8).toFixed(2)} SUSD</p>
+            </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Monthly Cost</p>
-            <p className="text-2xl font-bold">{formatApt(Number(storageStats.monthlyCost))}</p>
+            <p className="text-sm text-gray-600">Monthly Cost (Estimated)</p>
+            <p className="text-2xl font-bold">{(Number(storageStats.monthlyCost) / 1e8).toFixed(4)} SUSD</p>
           </div>
           <div className="card p-4">
             <p className="text-sm text-gray-600">Months Remaining</p>
@@ -459,12 +469,17 @@ export default function VaultPage() {
                       {file.contentType}
                     </td>
                     <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        {file.encrypted && <Lock className="w-4 h-4 text-green-500" />}
-                        {file.isPublic && <Globe className="w-4 h-4 text-blue-500" />}
-                        <span className="text-sm text-gray-600">
-                          {file.isPublic ? 'Public' : 'Private'}
-                        </span>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2">
+                          {file.encrypted && <Lock className="w-4 h-4 text-green-500" />}
+                          {file.isPublic && <Globe className="w-4 h-4 text-blue-500" />}
+                          <span className="text-sm text-gray-600">
+                            {file.isPublic ? 'Public' : 'Private'}
+                          </span>
+                        </div>
+                        <div className="text-xs text-orange-500 font-medium">
+                          Expires in {getDaysUntilExpiry(file.createdAt)}d
+                        </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-right">
