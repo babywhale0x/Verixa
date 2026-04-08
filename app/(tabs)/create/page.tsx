@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useDropzone } from 'react-dropzone';
 import {
-  Upload, Image, Video, Music, FileText, Loader2,
+  Upload, Image, Video, Music, FileText, Loader2, Star,
   Tag, Eye, Download, Crown, X, Check, Lock, Droplets, ArrowLeft
 } from 'lucide-react';
 import { aptToOctas, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMMERCIAL, TIER_SUBSCRIPTION } from '@/lib/aptos';
@@ -59,6 +59,33 @@ export default function CreatePage() {
   // Publish state
   const [isPublishing, setIsPublishing] = useState(false);
   const [publishProgress, setPublishProgress] = useState<{ current: number; total: number } | null>(null);
+
+  // Recent creations state
+  const [recentCreations, setRecentCreations] = useState<any[]>([]);
+  const [isLoadingRecent, setIsLoadingRecent] = useState(false);
+
+  // Fetch recent creations
+  const fetchRecentCreations = useCallback(async () => {
+    if (!account) return;
+    setIsLoadingRecent(true);
+    try {
+      const res = await fetch(`/api/profile/content?walletAddress=${account.address.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        const publishedFiles = data.files ? data.files.filter((f: any) => f.isPublished) : [];
+        setRecentCreations(publishedFiles.slice(0, 4));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingRecent(false);
+    }
+  }, [account]);
+
+  // Load on mount
+  require('react').useEffect(() => {
+    if (connected && account) fetchRecentCreations();
+  }, [connected, account, fetchRecentCreations]);
 
   const [tiers, setTiers] = useState<Record<number, PricingTier>>({
     [TIER_VIEW]: { enabled: true, price: 0.001 },
@@ -323,6 +350,7 @@ export default function CreatePage() {
         stagedFiles.length === 1 ? 'Content published!' : `${stagedFiles.length} items published!`,
         { id: 'upload' }
       );
+      fetchRecentCreations();
       resetAll();
     } catch (error: any) {
       console.error('Publish error:', error);
@@ -370,8 +398,33 @@ export default function CreatePage() {
             <p className="text-xl font-semibold text-gray-700">
               {isDragActive ? 'Drop files here' : 'Drag & drop your files here'}
             </p>
-            <p className="text-sm text-gray-500 mt-2">or click to browse — supports images, audio, video, documents</p>
             <p className="text-xs text-gray-400 mt-1">Max 500 MB per file • Multiple files supported</p>
+          </div>
+        )}
+
+        {/* ─── RECENT CREATIONS (Only visible when no files are staged) ─── */}
+        {stagedFiles.length === 0 && connected && recentCreations.length > 0 && (
+          <div className="mt-12">
+            <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+              <Star className="w-5 h-5 text-yellow-500" /> Your Recent Creations
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {recentCreations.map((file) => (
+                <div key={file.id} className="card overflow-hidden hover-lift flex flex-col border border-gray-200">
+                  <div className="h-28 relative bg-gray-100 flex items-center justify-center">
+                    {file.previewUrl ? (
+                      file.contentType.startsWith('image/')
+                        ? <img src={file.previewUrl} className="w-full h-full object-cover" alt="preview" />
+                        : getFileTypeIcon(file.contentType, 'sm')
+                    ) : getFileTypeIcon(file.contentType, 'sm')}
+                  </div>
+                  <div className="p-3 bg-white flex-1">
+                    <h4 className="font-semibold text-sm truncate mb-1">{file.name}</h4>
+                    <p className="text-xs text-gray-500">{new Date(file.createdAt).toLocaleDateString()}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
         )}
 
