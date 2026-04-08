@@ -211,11 +211,16 @@ export default function CreatePage() {
         toast.loading(`Publishing ${finalTitle} (${i + 1}/${stagedFiles.length})…`, { id: 'upload' });
 
         try {
-          // Encode
-          const data = Buffer.from(await file.arrayBuffer());
-          const commitments = await generateCommitments(provider, data);
+          // Step 1: Encrypt the file before upload
+          const { generateEncryptionKey, encryptData } = await import('@/lib/encryption');
+          const encKey = await generateEncryptionKey();
+          const rawData = new Uint8Array(await file.arrayBuffer());
+          const encryptedData = await encryptData(rawData, encKey);
 
-          // Register on-chain
+          // Step 2: Generate commitments from ENCRYPTED data
+          const commitments = await generateCommitments(provider, encryptedData);
+
+          // Step 3: Register on-chain
           const payload = ShelbyBlobClient.createRegisterBlobPayload({
             account: account.address as any,
             blobName,
@@ -228,14 +233,14 @@ export default function CreatePage() {
           const txResult = await signAndSubmitTransaction({ data: payload });
           await aptosClient.waitForTransaction({ transactionHash: txResult.hash });
 
-          // Upload to Shelby
+          // Step 4: Upload ENCRYPTED data to Shelby
           await shelbyClient.rpc.putBlob({
             account: account.address as any,
             blobName,
-            blobData: new Uint8Array(await file.arrayBuffer()),
+            blobData: encryptedData,
           });
 
-          // Handle preview
+          // Handle preview (previews are NOT encrypted — they are the blurred/watermarked version)
           let previewUrl: string | null = null;
           if (file.type.startsWith('image/') && generatedPreviews[i]) {
             previewUrl = generatedPreviews[i];
@@ -258,7 +263,7 @@ export default function CreatePage() {
             if (previewRes.ok) previewUrl = (await previewRes.json()).previewUrl;
           }
 
-          // Save metadata + pricing so it appears on Home/Explore
+          // Save metadata + pricing + encryption key
           await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -269,6 +274,8 @@ export default function CreatePage() {
               contentType: file.type,
               size: file.size,
               isPublic: true,
+              encrypted: true,
+              encryptionKey: encKey,
               description,
               categories: selectedCategories,
               tags: tagList,

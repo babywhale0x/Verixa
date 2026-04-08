@@ -131,11 +131,16 @@ export default function VaultPage() {
         toast.loading(`Uploading ${finalName} (${i + 1}/${stagedFiles.length})…`, { id: 'vault-upload' });
 
         try {
-          // Step 1: Encode data & generate commitments
-          const data = Buffer.from(await file.arrayBuffer());
-          const commitments = await generateCommitments(provider, data);
+          // Step 1: Encrypt the file before upload
+          const { generateEncryptionKey, encryptData } = await import('@/lib/encryption');
+          const encKey = await generateEncryptionKey();
+          const rawData = new Uint8Array(await file.arrayBuffer());
+          const encryptedData = await encryptData(rawData, encKey);
 
-          // Step 2: Register blob on-chain via wallet signature
+          // Step 2: Generate commitments from ENCRYPTED data
+          const commitments = await generateCommitments(provider, encryptedData);
+
+          // Step 3: Register blob on-chain via wallet signature
           const payload = ShelbyBlobClient.createRegisterBlobPayload({
             account: account.address as any,
             blobName,
@@ -148,14 +153,14 @@ export default function VaultPage() {
           const txResult = await signAndSubmitTransaction({ data: payload });
           await aptosClient.waitForTransaction({ transactionHash: txResult.hash });
 
-          // Step 3: Upload to Shelby RPC
+          // Step 4: Upload ENCRYPTED data to Shelby RPC
           await shelbyClient.rpc.putBlob({
             account: account.address as any,
             blobName,
-            blobData: new Uint8Array(await file.arrayBuffer()),
+            blobData: encryptedData,
           });
 
-          // Step 4: Save metadata to DB via API (private, not public)
+          // Step 5: Save metadata + encryption key to DB
           await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -166,6 +171,8 @@ export default function VaultPage() {
               contentType: file.type,
               size: file.size,
               isPublic: false,
+              encrypted: true,
+              encryptionKey: encKey,
               description: stagedDescription || null,
             }),
           });

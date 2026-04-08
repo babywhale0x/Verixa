@@ -13,7 +13,10 @@ export async function POST(request: NextRequest) {
       isPublic,
       description,
       previewUrl,
-      // New fields for marketplace content
+      // Encryption fields
+      encrypted,
+      encryptionKey,
+      // Marketplace fields
       categories,
       tags,
       viewPrice,
@@ -45,7 +48,8 @@ export async function POST(request: NextRequest) {
         size: BigInt(size),
         name,
         contentType,
-        encrypted: false,
+        encrypted: encrypted || false,
+        encryptionKey: encryptionKey || null,
         isPublic: isPublic || false,
         isPublished,
         publishedAt: isPublished ? new Date() : null,
