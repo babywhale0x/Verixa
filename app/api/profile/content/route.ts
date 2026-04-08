@@ -33,6 +33,7 @@ export async function GET(request: NextRequest) {
     const serializedFiles = files.map(f => ({
       ...f,
       size: f.size.toString(),
+      contentId: f.contentId ? f.contentId.toString() : null,
       createdAt: f.createdAt.toISOString()
     }));
 
