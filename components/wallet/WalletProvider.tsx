@@ -5,7 +5,7 @@ import { PropsWithChildren } from 'react';
 
 export function WalletProvider({ children }: PropsWithChildren) {
   return (
-    <AptosWalletAdapterProvider autoConnect={false}>
+    <AptosWalletAdapterProvider autoConnect={true}>
       {children}
     </AptosWalletAdapterProvider>
   );

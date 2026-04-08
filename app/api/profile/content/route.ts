@@ -30,7 +30,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ files });
+    const serializedFiles = files.map(f => ({
+      ...f,
+      size: f.size.toString(),
+      createdAt: f.createdAt.toISOString()
+    }));
+
+    return NextResponse.json({ files: serializedFiles });
   } catch (error) {
     console.error('Profile content error:', error);
     return NextResponse.json({ error: 'Failed to fetch content' }, { status: 500 });
