@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, Image, Video, Music, FileText, Trash2, Download, Lock, Globe, Loader2 } from 'lucide-react';
+import { Upload, File, Image, Video, Music, FileText, Trash2, Download, Lock, Globe, Loader2, ArrowLeft } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
 import { FiatOnramp } from '@/components/wallet/FiatOnramp';
 import toast from 'react-hot-toast';
@@ -20,7 +20,7 @@ interface StoredFile {
 }
 
 export default function VaultPage() {
-  const { connected, account } = useWallet();
+  const { connected, account, signAndSubmitTransaction } = useWallet();
   const [files, setFiles] = useState<StoredFile[]>([]);
   const [storageStats, setStorageStats] = useState({
     totalBytes: BigInt(0),
@@ -29,6 +29,7 @@ export default function VaultPage() {
     monthsRemaining: BigInt(0),
   });
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{ current: number; total: number } | null>(null);
   const [stagedFiles, setStagedFiles] = useState<File[]>([]);
   const [stagedTitle, setStagedTitle] = useState('');
   const [stagedDescription, setStagedDescription] = useState('');
@@ -44,11 +45,12 @@ export default function VaultPage() {
   }, [connected, account]);
 
   const fetchFiles = async () => {
+    if (!account) return;
     try {
-      const response = await fetch('/api/storage/files');
+      const response = await fetch(`/api/storage/files?wallet=${account.address.toString()}`);
       if (response.ok) {
         const data = await response.json();
-        setFiles(data.files);
+        setFiles(data.files || []);
       }
     } catch (error) {
       console.error('Failed to fetch files:', error);
@@ -58,15 +60,16 @@ export default function VaultPage() {
   };
 
   const fetchStorageStats = async () => {
+    if (!account) return;
     try {
-      const response = await fetch('/api/storage/status');
+      const response = await fetch(`/api/storage/status?wallet=${account.address.toString()}`);
       if (response.ok) {
         const data = await response.json();
         setStorageStats({
-          totalBytes: BigInt(data.totalBytes),
-          walletBalance: BigInt(data.walletBalance),
-          monthlyCost: BigInt(data.monthlyCost),
-          monthsRemaining: BigInt(data.monthsRemaining),
+          totalBytes: BigInt(data.totalBytes || 0),
+          walletBalance: BigInt(data.walletBalance || 0),
+          monthlyCost: BigInt(data.monthlyCost || 0),
+          monthsRemaining: BigInt(data.monthsRemaining || 0),
         });
       }
     } catch (error) {
@@ -85,77 +88,112 @@ export default function VaultPage() {
     setStagedDescription('');
   }, [connected]);
 
+  // ─── Upload using the BROWSER SDK (same flow as Create tab) ───
   const handleConfirmUpload = async () => {
     if (!connected || !account) return;
-    
+
     setIsUploading(true);
+    setUploadProgress({ current: 0, total: stagedFiles.length });
 
-    for (let i = 0; i < stagedFiles.length; i++) {
-      const file = stagedFiles[i];
-      let finalName = file.name;
-      if (stagedTitle) {
-        finalName = i === 0 ? stagedTitle : `${stagedTitle} ${i + 1}`;
+    try {
+      // Dynamically import the browser SDK (same as Create tab)
+      const {
+        createDefaultErasureCodingProvider,
+        generateCommitments,
+        expectedTotalChunksets,
+        ShelbyBlobClient,
+        ShelbyClient,
+        defaultErasureCodingConfig,
+      } = await import('@shelby-protocol/sdk/browser');
+      const { Aptos, AptosConfig, Network } = await import('@aptos-labs/ts-sdk');
+
+      const aptosClient = new Aptos(new AptosConfig({ network: Network.TESTNET }));
+      const shelbyClient = new ShelbyClient({
+        network: Network.TESTNET,
+        apiKey: process.env.NEXT_PUBLIC_SHELBY_API_KEY || '',
+      });
+      const provider = await createDefaultErasureCodingProvider();
+      const config = defaultErasureCodingConfig();
+
+      for (let i = 0; i < stagedFiles.length; i++) {
+        const file = stagedFiles[i];
+        let finalName = file.name;
+        if (stagedTitle) {
+          finalName = stagedFiles.length === 1
+            ? stagedTitle
+            : `${stagedTitle} ${i + 1}`;
+        }
+
+        const safeBase = finalName.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+        const blobName = `vault-${Date.now()}-${safeBase}`;
+
+        setUploadProgress({ current: i + 1, total: stagedFiles.length });
+        toast.loading(`Uploading ${finalName} (${i + 1}/${stagedFiles.length})…`, { id: 'vault-upload' });
+
+        try {
+          // Step 1: Encode data & generate commitments
+          const data = Buffer.from(await file.arrayBuffer());
+          const commitments = await generateCommitments(provider, data);
+
+          // Step 2: Register blob on-chain via wallet signature
+          const payload = ShelbyBlobClient.createRegisterBlobPayload({
+            account: account.address as any,
+            blobName,
+            blobMerkleRoot: commitments.blob_merkle_root,
+            numChunksets: Number(expectedTotalChunksets(commitments.raw_data_size, config.chunkSizeBytes * config.erasure_k)),
+            expirationMicros: Math.floor((Date.now() + 1000 * 60 * 60 * 24 * 365) * 1000),
+            blobSize: Number(commitments.raw_data_size),
+            encoding: config.enumIndex,
+          });
+          const txResult = await signAndSubmitTransaction({ data: payload });
+          await aptosClient.waitForTransaction({ transactionHash: txResult.hash });
+
+          // Step 3: Upload to Shelby RPC
+          await shelbyClient.rpc.putBlob({
+            account: account.address as any,
+            blobName,
+            blobData: new Uint8Array(await file.arrayBuffer()),
+          });
+
+          // Step 4: Save metadata to DB via API (private, not public)
+          await fetch('/api/upload/save', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              walletAddress: account.address.toString(),
+              blobId: blobName,
+              name: finalName,
+              contentType: file.type,
+              size: file.size,
+              isPublic: false,
+              description: stagedDescription || null,
+            }),
+          });
+
+          toast.success(`Uploaded ${finalName}`, { id: 'vault-upload' });
+        } catch (err: any) {
+          console.error(`Upload error for ${finalName}:`, err);
+          toast.error(`Failed to upload ${finalName} — ${err?.message || 'Unknown error'}`, { id: 'vault-upload' });
+        }
       }
 
-      try {
-        // Step 1: Initiate upload
-        const initResponse = await fetch('/api/upload', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileSize: file.size,
-            contentType: file.type,
-            encrypted: true,
-            walletAddress: account.address.toString(),
-          }),
-        });
+      toast.success(
+        stagedFiles.length === 1 ? 'File uploaded to vault!' : `${stagedFiles.length} files uploaded to vault!`,
+        { id: 'vault-upload' },
+      );
 
-        if (initResponse.status === 402) {
-          toast.error('Insufficient storage balance. Please fund your wallet.');
-          setShowFundModal(true);
-          break;
-        }
-
-        if (!initResponse.ok) {
-          throw new Error('Failed to initiate upload');
-        }
-
-        const { blobId } = await initResponse.json();
-
-        // Step 2: Upload file
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('metadata', JSON.stringify({
-          blobId,
-          name: finalName,
-          description: stagedDescription || null,
-          contentType: file.type,
-          isPublic: false,
-          walletAddress: account.address.toString(),
-        }));
-
-        const uploadResponse = await fetch('/api/upload/complete', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadResponse.ok) {
-          throw new Error('Failed to upload file');
-        }
-
-        toast.success(`Uploaded ${finalName}`);
-      } catch (error) {
-        console.error('Upload error:', error);
-        toast.error(`Failed to upload ${finalName}`);
-      }
+      setStagedFiles([]);
+      setStagedTitle('');
+      setStagedDescription('');
+      fetchFiles();
+      fetchStorageStats();
+    } catch (error: any) {
+      console.error('Vault upload error:', error);
+      toast.error(error?.message || 'Failed to upload', { id: 'vault-upload' });
+    } finally {
+      setIsUploading(false);
+      setUploadProgress(null);
     }
-
-    setIsUploading(false);
-    setStagedFiles([]);
-    setStagedTitle('');
-    setStagedDescription('');
-    fetchFiles();
-    fetchStorageStats();
   };
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -265,21 +303,52 @@ export default function VaultPage() {
         {/* Upload Area */}
         {stagedFiles.length > 0 ? (
           <div className="card p-6 mb-8 border border-blue-200 bg-blue-50">
-            <h2 className="text-lg font-semibold mb-4">Confirm Upload</h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold">Confirm Upload</h2>
+              <button
+                onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
+                disabled={isUploading}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+              >
+                <ArrowLeft className="w-4 h-4" /> Change files
+              </button>
+            </div>
+
+            {/* File List */}
+            <div className="space-y-2 max-h-48 overflow-y-auto pr-1 mb-4">
+              {stagedFiles.map((f, i) => {
+                const finalName = stagedTitle
+                  ? (stagedFiles.length === 1 ? stagedTitle : `${stagedTitle} ${i + 1}`)
+                  : f.name;
+                return (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                    {getFileIcon(f.type)}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{finalName}</p>
+                      <p className="text-xs text-gray-400">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
             <div className="space-y-4">
-              <p className="text-sm text-gray-600">{stagedFiles.length} file(s) selected.</p>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Base Name</label>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  {stagedFiles.length === 1 ? 'Name' : 'Base Name'}
+                </label>
                 <input
                   type="text"
                   value={stagedTitle}
                   onChange={(e) => setStagedTitle(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
-                  placeholder={stagedFiles[0].name}
+                  placeholder={stagedFiles[0]?.name || 'Enter name'}
                 />
-                <p className="text-xs text-gray-500 mt-1">
-                  If uploading multiple files, they will be numbered automatically (e.g., Name, Name 2). Leave blank to use original.
-                </p>
+                {stagedFiles.length > 1 && (
+                  <p className="text-xs text-gray-500 mt-1">
+                    Files will be named <strong>{stagedTitle || 'Name'} 1</strong>, <strong>{stagedTitle || 'Name'} 2</strong>…
+                  </p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
@@ -288,16 +357,35 @@ export default function VaultPage() {
                   onChange={(e) => setStagedDescription(e.target.value)}
                   className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
                   rows={2}
-                  placeholder="Shared description for these files"
+                  placeholder="Describe these files"
                 />
               </div>
+
+              {/* Progress indicator */}
+              {uploadProgress && (
+                <div className="p-3 bg-white rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-3 mb-2">
+                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                    <span className="text-sm font-medium text-blue-800">
+                      Uploading {uploadProgress.current} of {uploadProgress.total}…
+                    </span>
+                  </div>
+                  <div className="w-full bg-blue-200 rounded-full h-1.5">
+                    <div
+                      className="bg-blue-600 h-1.5 rounded-full transition-all"
+                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
               <div className="flex gap-4 pt-2">
                 <button
                   onClick={handleConfirmUpload}
                   disabled={isUploading}
                   className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2"
                 >
-                  {isUploading ? <><Loader2 className="w-5 h-5 animate-spin"/> Uploading...</> : 'Upload to Vault'}
+                  {isUploading ? <><Loader2 className="w-5 h-5 animate-spin"/> Uploading…</> : <><Upload className="w-5 h-5" /> Upload to Vault</>}
                 </button>
                 <button
                   onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
@@ -322,6 +410,7 @@ export default function VaultPage() {
               {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
             </p>
             <p className="text-sm text-gray-500 mt-1">or click to browse</p>
+            <p className="text-xs text-gray-400 mt-1">Max 500 MB per file · Files are stored privately in your vault</p>
           </div>
         )}
 
@@ -367,7 +456,7 @@ export default function VaultPage() {
                         {file.encrypted && <Lock className="w-4 h-4 text-green-500" />}
                         {file.isPublic && <Globe className="w-4 h-4 text-blue-500" />}
                         <span className="text-sm text-gray-600">
-                          {file.encrypted ? 'Encrypted' : 'Private'}
+                          {file.isPublic ? 'Public' : 'Private'}
                         </span>
                       </div>
                     </td>
