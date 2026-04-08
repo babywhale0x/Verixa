@@ -43,7 +43,13 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return NextResponse.json({ files });
+    const serializedFiles = files.map(file => ({
+      ...file,
+      size: file.size.toString(),
+      createdAt: file.createdAt.toISOString(),
+    }));
+
+    return NextResponse.json({ files: serializedFiles });
   } catch (error) {
     console.error('Failed to fetch files:', error);
     return NextResponse.json(

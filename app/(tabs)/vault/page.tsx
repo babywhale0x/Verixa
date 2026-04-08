@@ -326,8 +326,8 @@ export default function VaultPage() {
             </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Average Yearly Cost</p>
-            <p className="text-2xl font-bold">{((Number(storageStats.totalBytes) / 1073741824) * 0.012).toFixed(4)} SUSD</p>
+            <p className="text-sm text-gray-600">Total Storage Fees (Yearly Rate)</p>
+            <p className="text-2xl font-bold text-green-600">{((Number(storageStats.totalBytes) / 1073741824) * 0.012).toFixed(4)} SUSD</p>
           </div>
         </div>
 
@@ -431,17 +431,23 @@ export default function VaultPage() {
         ) : (
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-12 text-center cursor-pointer transition-colors mb-8 ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+            className={`border-2 border-dashed rounded-xl p-5 flex flex-col sm:flex-row items-center justify-center gap-4 cursor-pointer transition-all mb-8 shadow-sm ${
+              isDragActive ? 'border-blue-500 bg-blue-50 scale-[1.01]' : 'border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className="w-12 h-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-lg font-medium">
-              {isDragActive ? 'Drop files here' : 'Drag & drop files here'}
-            </p>
-            <p className="text-sm text-gray-500 mt-1">or click to browse</p>
-            <p className="text-xs text-gray-400 mt-1">Max 500 MB per file · Files are stored privately in your vault</p>
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-full shadow-inner">
+               <Upload className="w-5 h-5" />
+            </div>
+            <div className="text-center sm:text-left flex-1">
+              <p className="text-sm font-semibold text-gray-800">
+                {isDragActive ? 'Drop files here to securely upload' : 'Click to browse or drag & drop files here'}
+              </p>
+              <p className="text-xs text-gray-500 mt-0.5">Max 500 MB per file · Decentralized & Encrypted</p>
+            </div>
+            <button className="hidden sm:block px-5 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 shadow-sm transition-colors">
+              Browse Files
+            </button>
           </div>
         )}
 
