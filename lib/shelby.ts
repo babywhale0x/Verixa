@@ -1,10 +1,25 @@
-﻿import { ShelbyNodeClient } from '@shelby-protocol/sdk/node';
 import { Network, Ed25519PrivateKey, Ed25519Account } from '@aptos-labs/ts-sdk';
 
-const shelbyClient = new ShelbyNodeClient({
-  network: Network.TESTNET,
-  apiKey: process.env.SHELBY_API_KEY || '',
-});
+// Lazy-initialised client – avoids crashing the module on import
+// (the Shelby SDK pulls in WASM / native deps that can fail at
+// module-evaluation time in some runtimes like Vercel Edge).
+let _shelbyClient: any = null;
+
+async function getShelbyClient() {
+  if (_shelbyClient) return _shelbyClient;
+
+  try {
+    const { ShelbyNodeClient } = await import('@shelby-protocol/sdk/node');
+    _shelbyClient = new ShelbyNodeClient({
+      network: Network.TESTNET,
+      apiKey: process.env.SHELBY_API_KEY || '',
+    });
+    return _shelbyClient;
+  } catch (error) {
+    console.error('Failed to initialise ShelbyNodeClient:', error);
+    throw new Error('Shelby SDK initialisation failed');
+  }
+}
 
 function getAccount(): Ed25519Account {
   const rawKey = process.env.SHELBY_PRIVATE_KEY || '';
@@ -30,6 +45,9 @@ export async function initiateUpload(
   contentType: string,
   encrypted: boolean = false
 ): Promise<UploadSession> {
+  // Ensure the SDK loads successfully before returning a session
+  await getShelbyClient();
+
   const blobId = `verixa-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   return {
     blobId,
@@ -45,13 +63,15 @@ export async function completeUpload(
   fileName: string
 ): Promise<{ rootHash: Uint8Array; size: number; blobName: string }> {
   try {
+    const client = await getShelbyClient();
     const account = getAccount();
     const blobName = `${blobId}/${fileName}`;
     const expirationMicros = (Date.now() + 1000 * 60 * 60 * 24 * 365) * 1000;
 
-    await shelbyClient.upload({
+    // The SDK expects Uint8Array — Buffer is a subclass so this works
+    await client.upload({
       signer: account,
-      blobData: fileData,
+      blobData: new Uint8Array(fileData),
       blobName,
       expirationMicros,
     });
@@ -71,18 +91,25 @@ export async function downloadBlob(
   blobName: string
 ): Promise<Buffer> {
   try {
+    const client = await getShelbyClient();
     const account = getAccount();
-    const blob = await shelbyClient.download({
+
+    const blob = await client.download({
       account: account.accountAddress,
       blobName,
     });
-    const chunks: Buffer[] = [];
-    return new Promise((resolve, reject) => {
-      const readable = (blob as any).readable || (blob as any).stream;
-      readable.on('data', (chunk: Buffer) => chunks.push(chunk));
-      readable.on('end', () => resolve(Buffer.concat(chunks)));
-      readable.on('error', reject);
-    });
+
+    // ShelbyBlob.readable is a Web ReadableStream, not a Node stream.
+    const reader = blob.readable.getReader();
+    const chunks: Uint8Array[] = [];
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (value) chunks.push(value);
+    }
+
+    return Buffer.concat(chunks);
   } catch (error) {
     console.error('Shelby download error:', error);
     throw new Error('Failed to download from Shelby storage');

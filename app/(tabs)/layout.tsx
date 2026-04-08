@@ -12,7 +12,7 @@ const tabs = [
   { name: 'Explore', href: '/explore', icon: Compass },
   { name: 'Vault',   href: '/vault',   icon: Lock },
   { name: 'Create',  href: '/create',  icon: PlusCircle },
-  { name: 'Profile', href: '/wallet',  icon: User },
+  { name: 'Profile', href: '/profile', icon: User },
 ];
 
 export default function TabsLayout({ children }: { children: React.ReactNode }) {
