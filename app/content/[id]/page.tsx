@@ -8,19 +8,18 @@ import { formatApt, getTierName, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMM
 import toast from 'react-hot-toast';
 
 interface ContentDetail {
-  contentId: bigint;
+  contentId: string;
   creator: string;
   title: string;
   description: string;
   contentType: string;
-  previewBlobId: string;
   previewUrl?: string;
-  viewPrice: bigint;
-  borrowPrice: bigint;
-  licensePrice: bigint;
-  commercialPrice: bigint;
+  viewPrice: string;
+  borrowPrice: string;
+  licensePrice: string;
+  commercialPrice: string;
   tags: string[];
-  uploadTimestamp: number;
+  uploadTimestamp: string;
 }
 
 export default function ContentDetailPage() {
@@ -38,23 +37,13 @@ export default function ContentDetailPage() {
 
   const fetchContent = async () => {
     try {
-      // Mock data for now
-      const mockContent: ContentDetail = {
-        contentId: BigInt(params.id as string),
-        creator: '0x1234567890abcdef1234567890abcdef12345678',
-        title: 'Summer Vibes EP',
-        description: 'A collection of electronic music tracks perfect for summer. Features 5 original tracks including the hit single "Midnight Drive".',
-        contentType: 'audio/mpeg',
-        previewBlobId: 'blob1',
-        viewPrice: BigInt(100000),
-        borrowPrice: BigInt(500000),
-        licensePrice: BigInt(1000000),
-        commercialPrice: BigInt(5000000),
-        tags: ['music', 'electronic', 'summer', 'upbeat'],
-        uploadTimestamp: Date.now() - 86400000,
-      };
-
-      setContent(mockContent);
+      const res = await fetch(`/api/content/${params.id}`);
+      if (res.ok) {
+        const data = await res.json();
+        setContent(data);
+      } else {
+        setContent(null);
+      }
 
       // Check if user has access
       if (connected && account) {
@@ -85,7 +74,7 @@ export default function ContentDetailPage() {
         data: {
           function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::purchase_access` as `${string}::${string}::${string}`,
           functionArguments: [
-            content.contentId.toString(),
+            content.contentId,
             tier.toString(),
           ],
           typeArguments: [],
@@ -107,7 +96,7 @@ export default function ContentDetailPage() {
     return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const formatDate = (timestamp: number) => {
+  const formatDate = (timestamp: string) => {
     return new Date(timestamp).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'long',
@@ -133,6 +122,11 @@ export default function ContentDetailPage() {
       </div>
     );
   }
+
+  const viewPrice = Number(content.viewPrice);
+  const borrowPrice = Number(content.borrowPrice);
+  const licensePrice = Number(content.licensePrice);
+  const commercialPrice = Number(content.commercialPrice);
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -257,7 +251,7 @@ export default function ContentDetailPage() {
               ) : (
                 <div className="space-y-3">
                   {/* View Tier */}
-                  {content.viewPrice > 0 && (
+                  {viewPrice > 0 && (
                     <button
                       onClick={() => handlePurchase(TIER_VIEW)}
                       disabled={isPurchasing}
@@ -275,7 +269,7 @@ export default function ContentDetailPage() {
                           {isPurchasing && selectedTier === TIER_VIEW ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(Number(content.viewPrice))
+                            formatApt(viewPrice)
                           )}
                         </span>
                       </div>
@@ -283,7 +277,7 @@ export default function ContentDetailPage() {
                   )}
 
                   {/* Borrow Tier */}
-                  {content.borrowPrice > 0 && (
+                  {borrowPrice > 0 && (
                     <button
                       onClick={() => handlePurchase(TIER_BORROW)}
                       disabled={isPurchasing}
@@ -301,7 +295,7 @@ export default function ContentDetailPage() {
                           {isPurchasing && selectedTier === TIER_BORROW ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(Number(content.borrowPrice))
+                            formatApt(borrowPrice)
                           )}
                         </span>
                       </div>
@@ -309,7 +303,7 @@ export default function ContentDetailPage() {
                   )}
 
                   {/* License Tier */}
-                  {content.licensePrice > 0 && (
+                  {licensePrice > 0 && (
                     <button
                       onClick={() => handlePurchase(TIER_LICENSE)}
                       disabled={isPurchasing}
@@ -327,7 +321,7 @@ export default function ContentDetailPage() {
                           {isPurchasing && selectedTier === TIER_LICENSE ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(Number(content.licensePrice))
+                            formatApt(licensePrice)
                           )}
                         </span>
                       </div>
@@ -335,7 +329,7 @@ export default function ContentDetailPage() {
                   )}
 
                   {/* Commercial Tier */}
-                  {content.commercialPrice > 0 && (
+                  {commercialPrice > 0 && (
                     <button
                       onClick={() => handlePurchase(TIER_COMMERCIAL)}
                       disabled={isPurchasing}
@@ -353,7 +347,7 @@ export default function ContentDetailPage() {
                           {isPurchasing && selectedTier === TIER_COMMERCIAL ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(Number(content.commercialPrice))
+                            formatApt(commercialPrice)
                           )}
                         </span>
                       </div>

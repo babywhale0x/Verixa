@@ -258,7 +258,7 @@ export default function CreatePage() {
             if (previewRes.ok) previewUrl = (await previewRes.json()).previewUrl;
           }
 
-          // Save metadata
+          // Save metadata + pricing so it appears on Home/Explore
           await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -271,7 +271,13 @@ export default function CreatePage() {
               isPublic: true,
               description,
               categories: selectedCategories,
+              tags: tagList,
               previewUrl,
+              viewPrice,
+              borrowPrice,
+              licensePrice,
+              commercialPrice,
+              subscriptionPrice,
             }),
           });
 

@@ -1,20 +1,21 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Search, Music, Image, Video, FileText, Loader2, Heart, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
 
 interface Content {
-  contentId: bigint;
+  contentId: string;
   creator: string;
   title: string;
   description: string;
   contentType: string;
   previewUrl?: string;
-  viewPrice: bigint;
-  licensePrice: bigint;
+  viewPrice: string;
+  licensePrice: string;
   tags: string[];
+  uploadTimestamp: string;
 }
 
 const CATEGORIES = [
@@ -52,20 +53,16 @@ const TYPE_BG: Record<string, string> = {
   document: 'linear-gradient(135deg, #10b981 0%, #14b8a6 100%)',
 };
 
-const MOCK_CONTENT: Content[] = [
-  { contentId: BigInt(1), creator: '0x1234...5678', title: 'Summer Vibes EP', description: 'Electronic music for summer', contentType: 'audio/mpeg', viewPrice: BigInt(100000), licensePrice: BigInt(1000000), tags: ['music', 'electronic'] },
-  { contentId: BigInt(2), creator: '0xabcd...efgh', title: 'Nature Photography', description: 'High-res nature shots from Iceland', contentType: 'image/jpeg', viewPrice: BigInt(50000), licensePrice: BigInt(500000), tags: ['photography', 'nature'] },
-  { contentId: BigInt(3), creator: '0x9876...5432', title: 'Abstract Art Series', description: 'Digital artwork collection', contentType: 'image/png', viewPrice: BigInt(200000), licensePrice: BigInt(2000000), tags: ['art', 'nft'] },
-  { contentId: BigInt(4), creator: '0x1111...2222', title: 'Documentary Shorts', description: 'Nature documentary series', contentType: 'video/mp4', viewPrice: BigInt(300000), licensePrice: BigInt(3000000), tags: ['video', 'nature'] },
-  { contentId: BigInt(5), creator: '0x3333...4444', title: 'Design System Pack', description: 'Complete UI/UX design assets', contentType: 'image/svg+xml', viewPrice: BigInt(150000), licensePrice: BigInt(1500000), tags: ['design'] },
-  { contentId: BigInt(6), creator: '0x5555...6666', title: 'Blockchain Research Vol. 1', description: 'Academic papers on DeFi', contentType: 'application/pdf', viewPrice: BigInt(80000), licensePrice: BigInt(800000), tags: ['research', 'education'] },
-];
-
 function getTypeKey(contentType: string): string {
   if (contentType.startsWith('image/')) return 'image';
   if (contentType.startsWith('audio/')) return 'audio';
   if (contentType.startsWith('video/')) return 'video';
   return 'document';
+}
+
+function formatAddress(addr: string) {
+  if (addr.length <= 12) return addr;
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
 function ContentCard({ content }: { content: Content }) {
@@ -75,7 +72,7 @@ function ContentCard({ content }: { content: Content }) {
 
   return (
     <Link
-      href={`/content/${content.contentId.toString()}`}
+      href={`/content/${content.contentId}`}
       className="card hover-lift overflow-hidden block"
     >
       {/* Preview area */}
@@ -117,14 +114,14 @@ function ContentCard({ content }: { content: Content }) {
           <div className="flex items-center gap-1.5">
             <div className="w-5 h-5 rounded-full" style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)' }} />
             <span className="text-xs font-medium" style={{ color: 'var(--text-secondary)' }}>
-              {content.creator}
+              {formatAddress(content.creator)}
             </span>
           </div>
         </div>
         <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>From</span>
           <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
-            {content.viewPrice > 0 ? formatApt(Number(content.viewPrice)) : 'Free'}
+            {Number(content.viewPrice) > 0 ? formatApt(Number(content.viewPrice)) : 'Free'}
           </span>
         </div>
         {/* Tags */}
@@ -152,7 +149,8 @@ function SkeletonCard() {
 }
 
 export default function ExplorePage() {
-  const [contents] = useState<Content[]>(MOCK_CONTENT);
+  const [contents, setContents] = useState<Content[]>([]);
+  const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -162,10 +160,29 @@ export default function ExplorePage() {
   const [sortBy, setSortBy] = useState('newest');
   const [showFilters, setShowFilters] = useState(false);
 
+  const fetchContent = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (searchQuery) params.set('search', searchQuery);
+      if (sortBy) params.set('sort', sortBy);
+      // We filter type/category client-side for multi-select; API supports single
+      const res = await fetch(`/api/content?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        setContents(data.contents || []);
+        setTotal(data.total || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch content:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [searchQuery, sortBy]);
+
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 700);
-    return () => clearTimeout(t);
-  }, []);
+    fetchContent();
+  }, [fetchContent]);
 
   const toggleType = (id: string) => setSelectedTypes(prev =>
     prev.includes(id) ? prev.filter(t => t !== id) : [...prev, id]
@@ -175,17 +192,9 @@ export default function ExplorePage() {
     prev.includes(id) ? prev.filter(c => c !== id) : [...prev, id]
   );
 
+  // Client-side filtering for multi-select type/category/price
   const filtered = useMemo(() => {
     let list = [...contents];
-
-    if (searchQuery) {
-      const q = searchQuery.toLowerCase();
-      list = list.filter(c =>
-        c.title.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q) ||
-        c.tags.some(t => t.includes(q))
-      );
-    }
 
     if (selectedTypes.length > 0) {
       list = list.filter(c =>
@@ -204,11 +213,8 @@ export default function ExplorePage() {
       return price >= minApt && price <= maxApt;
     });
 
-    if (sortBy === 'price_asc') list.sort((a, b) => Number(a.viewPrice) - Number(b.viewPrice));
-    if (sortBy === 'price_desc') list.sort((a, b) => Number(b.viewPrice) - Number(a.viewPrice));
-
     return list;
-  }, [contents, searchQuery, selectedTypes, selectedCategories, minPrice, maxPrice, sortBy]);
+  }, [contents, selectedTypes, selectedCategories, minPrice, maxPrice]);
 
   const activeFiltersCount = selectedTypes.length + selectedCategories.length + (minPrice ? 1 : 0) + (maxPrice ? 1 : 0);
 
@@ -399,18 +405,28 @@ export default function ExplorePage() {
             ) : filtered.length === 0 ? (
               <div className="text-center py-20">
                 <Search className="w-12 h-12 mx-auto mb-4 opacity-20" style={{ color: 'var(--text-primary)' }} />
-                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>No results found</h3>
-                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>Try adjusting your search or filters</p>
-                <button
-                  onClick={() => { setSearchQuery(''); setSelectedTypes([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); }}
-                  className="btn-primary"
-                >
-                  Clear filters
-                </button>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--text-primary)' }}>
+                  {contents.length === 0 ? 'No content published yet' : 'No results found'}
+                </h3>
+                <p className="mb-4" style={{ color: 'var(--text-secondary)' }}>
+                  {contents.length === 0
+                    ? 'Be the first to publish content on Verixa!'
+                    : 'Try adjusting your search or filters'}
+                </p>
+                {contents.length === 0 ? (
+                  <Link href="/create" className="btn-primary">Create Content</Link>
+                ) : (
+                  <button
+                    onClick={() => { setSearchQuery(''); setSelectedTypes([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); }}
+                    className="btn-primary"
+                  >
+                    Clear filters
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filtered.map(c => <ContentCard key={c.contentId.toString()} content={c} />)}
+                {filtered.map(c => <ContentCard key={c.contentId} content={c} />)}
               </div>
             )}
           </div>

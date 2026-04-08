@@ -4,12 +4,38 @@ import { prisma } from '@/lib/db';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { walletAddress, blobId, name, contentType, size, isPublic, description, previewUrl } = body;
+    const {
+      walletAddress,
+      blobId,
+      name,
+      contentType,
+      size,
+      isPublic,
+      description,
+      previewUrl,
+      // New fields for marketplace content
+      categories,
+      tags,
+      viewPrice,
+      borrowPrice,
+      licensePrice,
+      commercialPrice,
+      subscriptionPrice,
+    } = body;
 
     let user = await prisma.user.findUnique({ where: { walletAddress } });
     if (!user) {
       user = await prisma.user.create({ data: { walletAddress } });
     }
+
+    // Determine if this is a marketplace publish (has pricing)
+    const isPublished = isPublic === true && (viewPrice != null || licensePrice != null);
+
+    // Build tag list from tags + categories
+    const allTags: string[] = [
+      ...(Array.isArray(tags) ? tags : []),
+      ...(Array.isArray(categories) ? categories : []),
+    ].filter(Boolean);
 
     await prisma.file.upsert({
       where: { blobId },
@@ -21,11 +47,48 @@ export async function POST(request: NextRequest) {
         contentType,
         encrypted: false,
         isPublic: isPublic || false,
+        isPublished,
+        publishedAt: isPublished ? new Date() : null,
         description: description || null,
         previewUrl: previewUrl || null,
       },
-      update: { isPublic: isPublic || false, previewUrl: previewUrl || undefined },
+      update: {
+        isPublic: isPublic || false,
+        isPublished,
+        publishedAt: isPublished ? new Date() : undefined,
+        previewUrl: previewUrl || undefined,
+      },
     });
+
+    // If marketplace content, also upsert into Content table for browsing
+    if (isPublished) {
+      const contentId = BigInt(Date.now()); // Use timestamp as unique ID
+      await prisma.content.upsert({
+        where: { id: contentId },
+        create: {
+          id: contentId,
+          creatorAddress: walletAddress,
+          title: name,
+          description: description || '',
+          contentType,
+          shelbyBlobId: blobId,
+          previewCid: previewUrl || null,
+          viewPrice: BigInt(viewPrice || 0),
+          borrowPrice: BigInt(borrowPrice || 0),
+          licensePrice: BigInt(licensePrice || 0),
+          commercialPrice: BigInt(commercialPrice || 0),
+          subscriptionPrice: BigInt(subscriptionPrice || 0),
+          tags: allTags,
+          uploadTimestamp: new Date(),
+        },
+        update: {
+          title: name,
+          description: description || '',
+          previewCid: previewUrl || undefined,
+          tags: allTags,
+        },
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {

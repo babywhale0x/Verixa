@@ -4,23 +4,18 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { TrendingUp, Clock, Star, ArrowRight, Music, Image, Video, FileText, Zap, Users, BarChart2 } from 'lucide-react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import { formatApt } from '@/lib/aptos';
 
 interface ContentItem {
-  id: string;
+  contentId: string;
   title: string;
   creator: string;
-  type: string;
-  price: number;
+  contentType: string;
+  viewPrice: string;
   previewUrl?: string;
-  trending?: boolean;
+  tags: string[];
+  uploadTimestamp: string;
 }
-
-const STATS = [
-  { label: '24h Volume', value: '142 APT', icon: BarChart2, color: '#6366f1' },
-  { label: 'Total Items', value: '2,841', icon: Star, color: '#f59e0b' },
-  { label: 'Top Sale', value: '5.2 APT', icon: TrendingUp, color: '#10b981' },
-  { label: 'Creators', value: '384', icon: Users, color: '#ec4899' },
-];
 
 const TYPE_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   audio:    { bg: 'rgba(139,92,246,0.15)', color: '#7c3aed', label: 'Audio' },
@@ -40,6 +35,13 @@ const GRADIENTS = [
 
 const TRENDING_TAGS = ['music', 'photography', 'nft', 'design', 'art', 'electronic', 'nature', 'tutorial', 'video', 'research'];
 
+function getTypeKey(contentType: string): string {
+  if (contentType.startsWith('image/')) return 'image';
+  if (contentType.startsWith('audio/')) return 'audio';
+  if (contentType.startsWith('video/')) return 'video';
+  return 'document';
+}
+
 function getTypeIcon(type: string) {
   if (type === 'audio')    return <Music className="w-5 h-5" />;
   if (type === 'image')    return <Image className="w-5 h-5" />;
@@ -47,31 +49,49 @@ function getTypeIcon(type: string) {
   return <FileText className="w-5 h-5" />;
 }
 
-const MOCK_TRENDING: ContentItem[] = [
-  { id: '1', title: 'Midnight Jazz Collection', creator: '0x1234...5678', type: 'audio', price: 0.01, trending: true },
-  { id: '2', title: 'Urban Photography Vol. 3', creator: '0xabcd...ef01', type: 'image', price: 0.005, trending: true },
-  { id: '3', title: 'Electronic Beats Pack', creator: '0x9876...5432', type: 'audio', price: 0.02 },
-  { id: '4', title: 'Motion Graphics Bundle', creator: '0x2222...3333', type: 'video', price: 0.05, trending: true },
-  { id: '5', title: 'NFT Artwork Series', creator: '0x4444...5555', type: 'image', price: 0.015 },
-];
-
-const MOCK_FEATURED: ContentItem[] = [
-  { id: '6', title: 'Nature Documentary Shorts', creator: '0x1111...2222', type: 'video', price: 0.05 },
-  { id: '7', title: 'Design Assets Mega Pack', creator: '0x3333...4444', type: 'image', price: 0.015 },
-  { id: '8', title: 'Research Papers Bundle', creator: '0x5555...6666', type: 'document', price: 0.008 },
-];
+function formatAddress(addr: string) {
+  if (addr.length <= 12) return addr;
+  return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
+}
 
 export default function HomePage() {
   const { connected, account } = useWallet();
   const [isLoading, setIsLoading] = useState(true);
+  const [recentContent, setRecentContent] = useState<ContentItem[]>([]);
+  const [totalItems, setTotalItems] = useState(0);
 
   useEffect(() => {
-    const t = setTimeout(() => setIsLoading(false), 600);
-    return () => clearTimeout(t);
+    fetchContent();
   }, []);
+
+  const fetchContent = async () => {
+    try {
+      const res = await fetch('/api/content?sort=newest&limit=20');
+      if (res.ok) {
+        const data = await res.json();
+        setRecentContent(data.contents || []);
+        setTotalItems(data.total || 0);
+      }
+    } catch (error) {
+      console.error('Failed to fetch content:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const shortAddress = account?.address?.toString() ?? '';
   const displayAddr = shortAddress ? `${shortAddress.slice(0, 6)}…${shortAddress.slice(-4)}` : '';
+
+  // Split content into trending (first 5) and featured (next 3)
+  const trending = recentContent.slice(0, 5);
+  const featured = recentContent.slice(5, 8);
+
+  const STATS = [
+    { label: 'Total Items', value: totalItems.toString(), icon: Star, color: '#f59e0b' },
+    { label: 'Categories', value: '12', icon: BarChart2, color: '#6366f1' },
+    { label: 'Open Market', value: 'Live', icon: TrendingUp, color: '#10b981' },
+    { label: 'Creators', value: new Set(recentContent.map(c => c.creator)).size.toString(), icon: Users, color: '#ec4899' },
+  ];
 
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
@@ -152,12 +172,12 @@ export default function HomePage() {
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-14">
 
-        {/* ─── TRENDING NOW ─── */}
+        {/* ─── LATEST CONTENT ─── */}
         <section>
           <div className="flex items-center justify-between mb-5">
             <div className="flex items-center gap-2">
               <TrendingUp className="w-5 h-5" style={{ color: 'var(--accent)' }} />
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Trending Now</h2>
+              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Latest Content</h2>
             </div>
             <Link href="/explore" className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--accent)' }}>
               View all <ArrowRight className="w-3.5 h-3.5" />
@@ -175,37 +195,46 @@ export default function HomePage() {
                     </div>
                   </div>
                 ))
-              : MOCK_TRENDING.map((item, idx) => {
-                  const ts = TYPE_STYLES[item.type] ?? TYPE_STYLES.document;
+              : trending.length === 0 ? (
+                  <div className="w-full text-center py-12">
+                    <Star className="w-12 h-12 mx-auto mb-3 opacity-20" style={{ color: 'var(--text-primary)' }} />
+                    <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>No content yet — be the first to publish!</p>
+                    <Link href="/create" className="btn-primary mt-4 inline-flex">Create Content</Link>
+                  </div>
+                )
+              : trending.map((item, idx) => {
+                  const typeKey = getTypeKey(item.contentType);
+                  const ts = TYPE_STYLES[typeKey] ?? TYPE_STYLES.document;
                   return (
                     <Link
-                      key={item.id}
-                      href={`/content/${item.id}`}
+                      key={item.contentId}
+                      href={`/content/${item.contentId}`}
                       className="shrink-0 hover-lift overflow-hidden rounded-2xl"
                       style={{ width: 280, background: 'var(--surface)', border: '1px solid var(--border)' }}
                     >
                       {/* Preview */}
                       <div className="relative h-40 flex items-center justify-center" style={{ background: GRADIENTS[idx % GRADIENTS.length] }}>
-                        <div style={{ color: 'rgba(255,255,255,0.4)', transform: 'scale(2)' }}>{getTypeIcon(item.type)}</div>
+                        {item.previewUrl && item.contentType.startsWith('image/') ? (
+                          <img src={item.previewUrl} alt={item.title} className="w-full h-full object-cover" />
+                        ) : (
+                          <div style={{ color: 'rgba(255,255,255,0.4)', transform: 'scale(2)' }}>{getTypeIcon(typeKey)}</div>
+                        )}
                         {/* Badges */}
                         <div className="absolute top-3 left-3 flex gap-1.5">
                           <span className="type-badge" style={{ background: 'rgba(0,0,0,0.45)', color: '#fff' }}>
                             {ts.label}
                           </span>
-                          {item.trending && (
-                            <span className="type-badge" style={{ background: 'rgba(255,165,0,0.85)', color: '#fff' }}>
-                              🔥 Hot
-                            </span>
-                          )}
                         </div>
                       </div>
                       {/* Info */}
                       <div className="p-4">
                         <h3 className="font-semibold text-sm mb-1 truncate" style={{ color: 'var(--text-primary)' }}>{item.title}</h3>
-                        <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>by {item.creator}</p>
+                        <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>by {formatAddress(item.creator)}</p>
                         <div className="flex items-center justify-between">
                           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>From</span>
-                          <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>{item.price} APT</span>
+                          <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
+                            {Number(item.viewPrice) > 0 ? formatApt(Number(item.viewPrice)) : 'Free'}
+                          </span>
                         </div>
                       </div>
                     </Link>
@@ -215,63 +244,59 @@ export default function HomePage() {
         </section>
 
         {/* ─── FEATURED DROPS ─── */}
-        <section>
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <Star className="w-5 h-5 text-yellow-500" />
-              <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Featured Drops</h2>
+        {featured.length > 0 && (
+          <section>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <Star className="w-5 h-5 text-yellow-500" />
+                <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>More to Explore</h2>
+              </div>
+              <Link href="/explore" className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--accent)' }}>
+                View all <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
             </div>
-            <Link href="/explore" className="text-sm font-medium flex items-center gap-1" style={{ color: 'var(--accent)' }}>
-              View all <ArrowRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {isLoading
-              ? Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="rounded-2xl overflow-hidden card">
-                    <div className="skeleton h-48 w-full" />
-                    <div className="p-5 space-y-2">
-                      <div className="skeleton h-4 w-3/4 rounded" />
-                      <div className="skeleton h-3 w-full rounded" />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              {featured.map((item, idx) => {
+                const typeKey = getTypeKey(item.contentType);
+                const ts = TYPE_STYLES[typeKey] ?? TYPE_STYLES.document;
+                return (
+                  <Link
+                    key={item.contentId}
+                    href={`/content/${item.contentId}`}
+                    className="card hover-lift overflow-hidden group"
+                  >
+                    {/* Ribbon */}
+                    <div className="relative h-48 flex items-center justify-center" style={{ background: GRADIENTS[(idx + 3) % GRADIENTS.length] }}>
+                      {item.previewUrl && item.contentType.startsWith('image/') ? (
+                        <img src={item.previewUrl} alt={item.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <div style={{ color: 'rgba(255,255,255,0.35)', transform: 'scale(3)' }}>{getTypeIcon(typeKey)}</div>
+                      )}
+                      <div className="absolute top-3 right-3">
+                        <span className="type-badge" style={{ background: ts.bg, color: ts.color }}>{ts.label}</span>
+                      </div>
                     </div>
-                  </div>
-                ))
-              : MOCK_FEATURED.map((item, idx) => {
-                  const ts = TYPE_STYLES[item.type] ?? TYPE_STYLES.document;
-                  return (
-                    <Link
-                      key={item.id}
-                      href={`/content/${item.id}`}
-                      className="card hover-lift overflow-hidden group"
-                    >
-                      {/* Ribbon */}
-                      <div className="relative h-48 flex items-center justify-center" style={{ background: GRADIENTS[(idx + 3) % GRADIENTS.length] }}>
-                        <div style={{ color: 'rgba(255,255,255,0.35)', transform: 'scale(3)' }}>{getTypeIcon(item.type)}</div>
-                        <div className="absolute top-3 left-3">
-                          <span className="type-badge" style={{ background: 'rgba(99,102,241,0.9)', color: '#fff' }}>✦ FEATURED</span>
-                        </div>
-                        <div className="absolute top-3 right-3">
-                          <span className="type-badge" style={{ background: ts.bg, color: ts.color }}>{ts.label}</span>
-                        </div>
+                    <div className="p-5">
+                      <h3 className="font-bold mb-1 group-hover:text-[var(--accent)] transition-colors" style={{ color: 'var(--text-primary)' }}>
+                        {item.title}
+                      </h3>
+                      <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>by {formatAddress(item.creator)}</p>
+                      <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
+                        <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Floor price</span>
+                        <span className="font-bold" style={{ color: 'var(--accent)' }}>
+                          {Number(item.viewPrice) > 0 ? formatApt(Number(item.viewPrice)) : 'Free'}
+                        </span>
                       </div>
-                      <div className="p-5">
-                        <h3 className="font-bold mb-1 group-hover:text-[var(--accent)] transition-colors" style={{ color: 'var(--text-primary)' }}>
-                          {item.title}
-                        </h3>
-                        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>by {item.creator}</p>
-                        <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
-                          <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Floor price</span>
-                          <span className="font-bold" style={{ color: 'var(--accent)' }}>{item.price} APT</span>
-                        </div>
-                      </div>
-                    </Link>
-                  );
-                })}
-          </div>
-        </section>
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-        {/* ─── TRENDING TAGS ─── */}
+        {/* ─── BROWSE BY TAG ─── */}
         <section>
           <div className="flex items-center gap-2 mb-5">
             <Clock className="w-5 h-5" style={{ color: 'var(--text-muted)' }} />
