@@ -13,21 +13,34 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ listed: 0, sold: 0, earned: 0, purchased: 0 });
     }
 
-    const [listed, soldCount, earnedAgg, purchased] = await Promise.all([
-      // Items currently published by this user
-      prisma.file.count({ where: { userId: user.id, isPublished: true } }),
-      // Sales of content owned by this user (via File → Content purchases)
-      prisma.purchase.count({
-        where: { content: { files: { some: { userId: user.id } } } },
-      }),
-      // Total earned from sales
-      prisma.purchase.aggregate({
-        where: { content: { files: { some: { userId: user.id } } } },
+    const listed = await prisma.file.count({ where: { userId: user.id, isPublished: true } });
+
+    // Sales of content owned by this user
+    const userFiles = await prisma.file.findMany({
+      where: { userId: user.id, contentId: { not: null } },
+      select: { contentId: true },
+    });
+    
+    // We filter nulls, but since we queried `not: null`, they should be BigInts.
+    const contentIdsArray = userFiles.map(f => f.contentId as bigint);
+    // Remove duplicates
+    const uniqueContentIds = Array.from(new Set(contentIdsArray));
+
+    let soldCount = 0;
+    let earnedAgg = { _sum: { amountPaid: null as any } };
+
+    if (uniqueContentIds.length > 0) {
+      soldCount = await prisma.purchase.count({
+        where: { contentId: { in: uniqueContentIds } },
+      });
+
+      earnedAgg = await prisma.purchase.aggregate({
+        where: { contentId: { in: uniqueContentIds } },
         _sum: { amountPaid: true },
-      }),
-      // Items purchased by this user
-      prisma.purchase.count({ where: { userId: user.id } }),
-    ]);
+      });
+    }
+
+    const purchased = await prisma.purchase.count({ where: { userId: user.id } });
 
     return NextResponse.json({
       listed,

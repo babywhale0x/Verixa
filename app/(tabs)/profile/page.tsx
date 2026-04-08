@@ -33,7 +33,7 @@ interface PurchasedItem {
   id: string;
   tierId: number;
   amountPaid: number;
-  purchasedAt: string;
+  purchaseTimestamp: string;
   content: {
     title: string;
     files: Array<{
@@ -397,7 +397,7 @@ export default function ProfilePage() {
                         <div>
                           <h4 className="font-semibold mb-1 line-clamp-2">{p.content.title}</h4>
                           <p className="text-xs text-secondary mb-4 flex items-center gap-1.5">
-                            Purchased: {new Date(p.purchasedAt).toLocaleDateString()}
+                            Purchased: {new Date(p.purchaseTimestamp).toLocaleDateString()}
                           </p>
                         </div>
                         <a 
