@@ -271,11 +271,26 @@ export default function CreatePage() {
           await new Promise(r => setTimeout(r, 1500)); 
 
           // Step 4: Upload ENCRYPTED data to Shelby
-          await shelbyClient.rpc.putBlob({
-            account: account.address as any,
-            blobName,
-            blobData: encryptedData,
-          });
+          let uploadSuccess = false;
+          let uploadRetries = 0;
+          while (!uploadSuccess && uploadRetries < 3) {
+            try {
+              await shelbyClient.rpc.putBlob({
+                account: account.address as any,
+                blobName,
+                blobData: encryptedData,
+              });
+              uploadSuccess = true;
+            } catch (shelbyErr: any) {
+              uploadRetries++;
+              console.warn(`Shelby upload attempt ${uploadRetries} failed:`, shelbyErr);
+              if (uploadRetries >= 3) {
+                throw new Error(`Shelby multipart upload failed after 3 attempts. Their server might be overloaded.`);
+              }
+              // Wait 3 seconds before retrying
+              await new Promise(r => setTimeout(r, 3000));
+            }
+          }
 
           // Handle preview (previews are NOT encrypted — they are the blurred/watermarked version)
           let previewUrl: string | null = null;
