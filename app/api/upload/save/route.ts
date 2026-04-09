@@ -19,8 +19,8 @@ export async function POST(request: NextRequest) {
       // Marketplace fields
       categories,
       tags,
-      viewPrice,
-      borrowPrice,
+      streamPrice,
+      citePrice,
       licensePrice,
       commercialPrice,
       subscriptionPrice,
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine if this is a marketplace publish (has pricing)
-    const isPublished = isPublic === true && (viewPrice != null || licensePrice != null);
+    const isPublished = isPublic === true && (streamPrice != null || licensePrice != null || citePrice != null);
 
     // Build tag list from tags + categories
     const allTags: string[] = [
@@ -84,8 +84,8 @@ export async function POST(request: NextRequest) {
           contentType,
           shelbyBlobId: blobId,
           previewCid: previewUrl || null,
-          viewPrice: BigInt(viewPrice || 0),
-          borrowPrice: BigInt(borrowPrice || 0),
+          streamPrice: BigInt(streamPrice || 0),
+          citePrice: BigInt(citePrice || 0),
           licensePrice: BigInt(licensePrice || 0),
           commercialPrice: BigInt(commercialPrice || 0),
           subscriptionPrice: BigInt(subscriptionPrice || 0),

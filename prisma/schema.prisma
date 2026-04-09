@@ -78,8 +78,8 @@ model Content {
   contentType     String
   shelbyBlobId    String
   previewCid      String?
-  viewPrice       BigInt   @default(0)
-  borrowPrice     BigInt   @default(0)
+  streamPrice     BigInt   @default(0)
+  citePrice       BigInt   @default(0)
   licensePrice    BigInt   @default(0)
   commercialPrice BigInt   @default(0)
   subscriptionPrice BigInt @default(0)

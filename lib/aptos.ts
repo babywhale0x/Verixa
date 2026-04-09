@@ -17,8 +17,8 @@ export const SUBSCRIPTION_MODULE = `${VERIXA_MODULE_ADDRESS}::subscription`;
 
 // Access tier constants
 export const TIER_FREE = 0;
-export const TIER_VIEW = 1;
-export const TIER_BORROW = 2;
+export const TIER_STREAM = 1;
+export const TIER_CITE = 2;
 export const TIER_LICENSE = 3;
 export const TIER_COMMERCIAL = 4;
 export const TIER_SUBSCRIPTION = 5;
@@ -46,10 +46,10 @@ export function getTierName(tier: number): string {
   switch (tier) {
     case TIER_FREE:
       return 'Free Preview';
-    case TIER_VIEW:
-      return 'View (24h)';
-    case TIER_BORROW:
-      return 'Borrow (7d)';
+    case TIER_STREAM:
+      return 'Stream (In-App)';
+    case TIER_CITE:
+      return 'Cite (On-chain Reference)';
     case TIER_LICENSE:
       return 'License';
     case TIER_COMMERCIAL:

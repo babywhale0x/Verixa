@@ -5,9 +5,9 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useDropzone } from 'react-dropzone';
 import {
   Upload, Image, Video, Music, FileText, Loader2, Star,
-  Tag, Eye, Download, Crown, X, Check, Lock, Droplets, ArrowLeft
+  Tag, Eye, Download, Crown, X, Check, Lock, Droplets, ArrowLeft, Link as LinkIcon
 } from 'lucide-react';
-import { aptToOctas, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMMERCIAL, TIER_SUBSCRIPTION } from '@/lib/aptos';
+import { aptToOctas, TIER_STREAM, TIER_CITE, TIER_LICENSE, TIER_COMMERCIAL, TIER_SUBSCRIPTION } from '@/lib/aptos';
 import toast from 'react-hot-toast';
 
 type ImagePreviewMode = 'blur' | 'watermark';
@@ -88,8 +88,8 @@ export default function CreatePage() {
   }, [connected, account, fetchRecentCreations]);
 
   const [tiers, setTiers] = useState<Record<number, PricingTier>>({
-    [TIER_VIEW]: { enabled: true, price: 0.001 },
-    [TIER_BORROW]: { enabled: false, price: 0.005 },
+    [TIER_STREAM]: { enabled: true, price: 0.001 },
+    [TIER_CITE]: { enabled: false, price: 0.005 },
     [TIER_LICENSE]: { enabled: true, price: 0.01 },
     [TIER_COMMERCIAL]: { enabled: false, price: 0.05 },
     [TIER_SUBSCRIPTION]: { enabled: false, price: 0.02 },
@@ -223,8 +223,11 @@ export default function CreatePage() {
 
       const safeBase = baseTitle.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
       const tagList = [...tags.split(',').map(t => t.trim()).filter(Boolean), ...selectedCategories];
-      const viewPrice = tiers[TIER_VIEW].enabled ? aptToOctas(tiers[TIER_VIEW].price || 0) : 0;
-      const borrowPrice = tiers[TIER_BORROW].enabled ? aptToOctas(tiers[TIER_BORROW].price || 0) : 0;
+      
+      const hasOnlyImages = stagedFiles.every(f => f.type.startsWith('image/'));
+      const streamPrice = (!hasOnlyImages && tiers[TIER_STREAM].enabled) ? aptToOctas(tiers[TIER_STREAM].price || 0) : 0;
+      
+      const citePrice = tiers[TIER_CITE].enabled ? aptToOctas(tiers[TIER_CITE].price || 0) : 0;
       const licensePrice = tiers[TIER_LICENSE].enabled ? aptToOctas(tiers[TIER_LICENSE].price || 0) : 0;
       const commercialPrice = tiers[TIER_COMMERCIAL].enabled ? aptToOctas(tiers[TIER_COMMERCIAL].price || 0) : 0;
       const subscriptionPrice = tiers[TIER_SUBSCRIPTION].enabled ? aptToOctas(tiers[TIER_SUBSCRIPTION].price || 0) : 0;
@@ -300,7 +303,7 @@ export default function CreatePage() {
             data: {
               function: `${process.env.NEXT_PUBLIC_VERIXA_MODULE_ADDRESS}::marketplace::publish_content` as `${string}::${string}::${string}`,
               functionArguments: [finalTitle, description, file.type, blobName, rootBytes, blobName,
-                viewPrice, borrowPrice, licensePrice, commercialPrice, subscriptionPrice, tagList, 0],
+                streamPrice, citePrice, licensePrice, commercialPrice, subscriptionPrice, tagList, 0],
               typeArguments: [],
             },
           });
@@ -330,8 +333,8 @@ export default function CreatePage() {
               categories: selectedCategories,
               tags: tagList,
               previewUrl,
-              viewPrice,
-              borrowPrice,
+              streamPrice,
+              citePrice,
               licensePrice,
               commercialPrice,
               subscriptionPrice,
@@ -651,37 +654,39 @@ export default function CreatePage() {
               <div className="card p-6">
                 <h2 className="text-lg font-semibold mb-4">Pricing Tiers</h2>
                 <div className="space-y-4">
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <Eye className="w-5 h-5 text-blue-500 shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium">View (24 hours)</p>
-                      <p className="text-sm text-gray-500">Time-limited access</p>
-                    </div>
-                    <label className="flex items-center gap-2 shrink-0">
-                      <input type="checkbox" checked={tiers[TIER_VIEW].enabled} onChange={e => handleTierChange(TIER_VIEW, 'enabled', e.target.checked)} className="w-4 h-4" />
-                      <span className="text-sm">Enable</span>
-                    </label>
-                    {tiers[TIER_VIEW].enabled && (
-                      <div className="flex items-center gap-1 shrink-0">
-                        <input type="number" step="0.001" min="0" value={tiers[TIER_VIEW].price} onChange={e => handleTierChange(TIER_VIEW, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
-                        <span className="text-xs text-gray-500">APT</span>
+                  {!stagedFiles.every(f => f.type.startsWith('image/')) && (
+                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                      <Eye className="w-5 h-5 text-blue-500 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium">Stream (In-App)</p>
+                        <p className="text-sm text-gray-500">Full access in-app, no download</p>
                       </div>
-                    )}
-                  </div>
+                      <label className="flex items-center gap-2 shrink-0">
+                        <input type="checkbox" checked={tiers[TIER_STREAM].enabled} onChange={e => handleTierChange(TIER_STREAM, 'enabled', e.target.checked)} className="w-4 h-4" />
+                        <span className="text-sm">Enable</span>
+                      </label>
+                      {tiers[TIER_STREAM].enabled && (
+                        <div className="flex items-center gap-1 shrink-0">
+                          <input type="number" step="0.001" min="0" value={tiers[TIER_STREAM].price} onChange={e => handleTierChange(TIER_STREAM, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
+                          <span className="text-xs text-gray-500">APT</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
-                    <Download className="w-5 h-5 text-purple-500 shrink-0" />
+                    <LinkIcon className="w-5 h-5 text-purple-500 shrink-0" />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium">Borrow (7 days)</p>
-                      <p className="text-sm text-gray-500">Extended access</p>
+                      <p className="font-medium">Cite</p>
+                      <p className="text-sm text-gray-500">On-chain citation certificate + access</p>
                     </div>
                     <label className="flex items-center gap-2 shrink-0">
-                      <input type="checkbox" checked={tiers[TIER_BORROW].enabled} onChange={e => handleTierChange(TIER_BORROW, 'enabled', e.target.checked)} className="w-4 h-4" />
+                      <input type="checkbox" checked={tiers[TIER_CITE].enabled} onChange={e => handleTierChange(TIER_CITE, 'enabled', e.target.checked)} className="w-4 h-4" />
                       <span className="text-sm">Enable</span>
                     </label>
-                    {tiers[TIER_BORROW].enabled && (
+                    {tiers[TIER_CITE].enabled && (
                       <div className="flex items-center gap-1 shrink-0">
-                        <input type="number" step="0.001" min="0" value={tiers[TIER_BORROW].price} onChange={e => handleTierChange(TIER_BORROW, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
+                        <input type="number" step="0.001" min="0" value={tiers[TIER_CITE].price} onChange={e => handleTierChange(TIER_CITE, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
                         <span className="text-xs text-gray-500">APT</span>
                       </div>
                     )}

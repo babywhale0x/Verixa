@@ -3,8 +3,8 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Heart, Share2, Download, Eye, Clock, Shield, Loader2, Lock, Music, Video, FileText } from 'lucide-react';
-import { formatApt, getTierName, TIER_VIEW, TIER_BORROW, TIER_LICENSE, TIER_COMMERCIAL } from '@/lib/aptos';
+import { Heart, Share2, Download, Eye, Clock, Shield, Loader2, Lock, Music, Video, FileText, Crown } from 'lucide-react';
+import { formatApt, getTierName, TIER_STREAM, TIER_CITE, TIER_LICENSE, TIER_COMMERCIAL } from '@/lib/aptos';
 import toast from 'react-hot-toast';
 
 interface ContentDetail {
@@ -14,8 +14,8 @@ interface ContentDetail {
   description: string;
   contentType: string;
   previewUrl?: string;
-  viewPrice: string;
-  borrowPrice: string;
+  streamPrice: string;
+  citePrice: string;
   licensePrice: string;
   commercialPrice: string;
   tags: string[];
@@ -133,8 +133,8 @@ export default function ContentDetailPage() {
     );
   }
 
-  const viewPrice = Number(content.viewPrice);
-  const borrowPrice = Number(content.borrowPrice);
+  const streamPrice = Number(content.streamPrice);
+  const citePrice = Number(content.citePrice);
   const licensePrice = Number(content.licensePrice);
   const commercialPrice = Number(content.commercialPrice);
 
@@ -288,10 +288,10 @@ export default function ContentDetailPage() {
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {/* View Tier */}
-                  {viewPrice > 0 && (
+                  {/* Stream Tier */}
+                  {streamPrice > 0 && (
                     <button
-                      onClick={() => handlePurchase(TIER_VIEW)}
+                      onClick={() => handlePurchase(1)}
                       disabled={isPurchasing}
                       className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left"
                     >
@@ -299,41 +299,41 @@ export default function ContentDetailPage() {
                         <div className="flex items-center gap-3">
                           <Eye className="w-5 h-5 text-blue-500" />
                           <div>
-                            <p className="font-medium">View (24 hours)</p>
-                            <p className="text-sm text-gray-500">Stream content</p>
+                            <p className="font-medium">Stream (In-App)</p>
+                            <p className="text-sm text-gray-500">Full access in-app, no download</p>
                           </div>
                         </div>
                         <span className="font-semibold">
-                          {isPurchasing && selectedTier === TIER_VIEW ? (
+                          {isPurchasing && selectedTier === 1 ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(viewPrice)
+                            formatApt(streamPrice)
                           )}
                         </span>
                       </div>
                     </button>
                   )}
 
-                  {/* Borrow Tier */}
-                  {borrowPrice > 0 && (
+                  {/* Cite Tier */}
+                  {citePrice > 0 && (
                     <button
-                      onClick={() => handlePurchase(TIER_BORROW)}
+                      onClick={() => handlePurchase(2)}
                       disabled={isPurchasing}
                       className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Clock className="w-5 h-5 text-purple-500" />
+                          <FileText className="w-5 h-5 text-purple-500" />
                           <div>
-                            <p className="font-medium">Borrow (7 days)</p>
-                            <p className="text-sm text-gray-500">Extended access</p>
+                            <p className="font-medium">Cite</p>
+                            <p className="text-sm text-gray-500">On-chain citation certificate + access</p>
                           </div>
                         </div>
                         <span className="font-semibold">
-                          {isPurchasing && selectedTier === TIER_BORROW ? (
+                          {isPurchasing && selectedTier === 2 ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
-                            formatApt(borrowPrice)
+                            formatApt(citePrice)
                           )}
                         </span>
                       </div>
@@ -343,7 +343,7 @@ export default function ContentDetailPage() {
                   {/* License Tier */}
                   {licensePrice > 0 && (
                     <button
-                      onClick={() => handlePurchase(TIER_LICENSE)}
+                      onClick={() => handlePurchase(3)}
                       disabled={isPurchasing}
                       className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-colors text-left"
                     >
@@ -352,11 +352,11 @@ export default function ContentDetailPage() {
                           <Download className="w-5 h-5 text-green-500" />
                           <div>
                             <p className="font-medium">License</p>
-                            <p className="text-sm text-gray-500">Permanent download</p>
+                            <p className="text-sm text-gray-500">Download + private use rights + certificate</p>
                           </div>
                         </div>
                         <span className="font-semibold">
-                          {isPurchasing && selectedTier === TIER_LICENSE ? (
+                          {isPurchasing && selectedTier === 3 ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
                             formatApt(licensePrice)
@@ -369,20 +369,20 @@ export default function ContentDetailPage() {
                   {/* Commercial Tier */}
                   {commercialPrice > 0 && (
                     <button
-                      onClick={() => handlePurchase(TIER_COMMERCIAL)}
+                      onClick={() => handlePurchase(4)}
                       disabled={isPurchasing}
                       className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <Shield className="w-5 h-5 text-yellow-500" />
+                          <Crown className="w-5 h-5 text-yellow-500" />
                           <div>
                             <p className="font-medium">Commercial</p>
-                            <p className="text-sm text-gray-500">Full commercial rights</p>
+                            <p className="text-sm text-gray-500">Download + full commercial rights + certificate</p>
                           </div>
                         </div>
                         <span className="font-semibold">
-                          {isPurchasing && selectedTier === TIER_COMMERCIAL ? (
+                          {isPurchasing && selectedTier === 4 ? (
                             <Loader2 className="w-5 h-5 animate-spin" />
                           ) : (
                             formatApt(commercialPrice)
