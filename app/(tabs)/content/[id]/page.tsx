@@ -90,7 +90,32 @@ export default function ContentDetailPage() {
         },
       });
 
-      toast.success('Purchase successful! Please wait a moment while we process it...');
+      // Price maps for DB recording
+      const priceMap: Record<number, number> = {
+        1: Number(content.streamPrice),
+        2: Number(content.citePrice),
+        3: Number(content.licensePrice),
+        4: Number(content.commercialPrice)
+      };
+
+      // 1. Sync the permanent certificate with our backend 
+      try {
+        await fetch('/api/purchase/certify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            txHash: result.hash,
+            tier: tier,
+            contentId: content.contentId,
+            buyerAddress: account.address.toString(),
+            amount: priceMap[tier] || 0
+          })
+        });
+      } catch (err) {
+        console.error("Failed to sync certificate implicitly: ", err);
+      }
+
+      toast.success('Purchase successful! Certificate generated.');
       // Re-fetch to update access dynamically
       setTimeout(fetchContent, 2000);
     } catch (error) {

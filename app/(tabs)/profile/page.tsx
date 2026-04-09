@@ -6,10 +6,11 @@ import {
   User, ExternalLink, Copy, History, Download, Eye, Lock, 
   Crown, Play, Image as ImageIcon, FileText, Music, BarChart2,
   Package, DollarSign, Tag, Check, X, Loader2, ArrowUpRight, ArrowDownLeft,
-  HardDrive, Clock, Receipt
+  HardDrive, Clock, Receipt, Shield
 } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
 import { FiatOnramp } from '@/components/wallet/FiatOnramp';
+import CertificateModal from '@/components/CertificateModal';
 import toast from 'react-hot-toast';
 
 interface ProfileStats {
@@ -50,6 +51,8 @@ interface PurchasedItem {
       blobId: string;
     }>;
   };
+  licenseHash?: string;
+  transactionHash?: string;
 }
 
 const TIER_LABELS: Record<number, string> = {
@@ -80,6 +83,7 @@ export default function ProfilePage() {
   const { connected, account } = useWallet();
   const [activeTab, setActiveTab] = useState<'items' | 'purchases' | 'history'>('items');
   const [showFundModal, setShowFundModal] = useState(false);
+  const [selectedCertificate, setSelectedCertificate] = useState<PurchasedItem | null>(null);
   
   const [aptBalance, setAptBalance] = useState<number | null>(null);
   const [shelbyBalance, setShelbyBalance] = useState<number | null>(null);
@@ -487,12 +491,20 @@ export default function ProfilePage() {
                             Purchased: {new Date(p.purchaseTimestamp).toLocaleDateString()}
                           </p>
                         </div>
-                        <a 
-                          href={`/vault`} 
-                          className="btn-primary w-full justify-center text-sm"
-                        >
-                          View in Vault
-                        </a>
+                        <div className="flex gap-2">
+                          <button 
+                            onClick={() => setSelectedCertificate(p)}
+                            className="flex-1 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                          >
+                            <Shield className="w-3.5 h-3.5" /> Certificate
+                          </button>
+                          <a 
+                            href={`/vault`} 
+                            className="flex-1 py-2 bg-gray-900 text-white rounded-lg hover:bg-black text-xs font-semibold transition-colors flex items-center justify-center"
+                          >
+                            Vault
+                          </a>
+                        </div>
                       </div>
                     </div>
                   );
@@ -522,6 +534,12 @@ export default function ProfilePage() {
           toast.success('Wallet funded successfully!');
           fetchBalances(shortAddr!);
         }}
+      />
+      
+      <CertificateModal 
+        isOpen={!!selectedCertificate}
+        onClose={() => setSelectedCertificate(null)}
+        purchase={selectedCertificate}
       />
     </div>
   );
