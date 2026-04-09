@@ -266,6 +266,9 @@ export default function CreatePage() {
           });
           const txResult = await signAndSubmitTransaction({ data: payload });
           await aptosClient.waitForTransaction({ transactionHash: txResult.hash });
+          
+          // Delay to allow wallet extensions to sync the new sequence number
+          await new Promise(r => setTimeout(r, 1500)); 
 
           // Step 4: Upload ENCRYPTED data to Shelby
           await shelbyClient.rpc.putBlob({
@@ -312,6 +315,9 @@ export default function CreatePage() {
             },
           });
           await aptosClient.waitForTransaction({ transactionHash: publishTx.hash });
+          
+          // Delay before polling to avoid hitting rate limits instantly
+          await new Promise(r => setTimeout(r, 1500));
 
           // Get the actual on-chain content ID assigned by the contract by waiting for the indexer
           let currentContentIds = await getCreatorContents(account.address.toString());
@@ -362,9 +368,14 @@ export default function CreatePage() {
           }
 
           toast.success(`Published: ${finalTitle}`, { id: 'upload' });
+          
+          // Final delay before the NEXT file in the loop starts, to reset wallet state completely
+          if (i < stagedFiles.length - 1) {
+            await new Promise(r => setTimeout(r, 2000));
+          }
         } catch (err: any) {
           console.error(`Failed to publish ${finalTitle}:`, err);
-          toast.error(`Failed: ${finalTitle} — ${err?.message || 'Unknown error'}`, { id: 'upload' });
+          toast.error(`Failed: ${finalTitle} — ${err?.message || 'Unknown error'}`, { duration: 6000 });
         }
       }
 
