@@ -214,12 +214,6 @@ export default function CreatePage() {
       const { Aptos, AptosConfig, Network } = await import('@aptos-labs/ts-sdk');
 
       const aptosClient = new Aptos(new AptosConfig({ network: Network.TESTNET }));
-      const shelbyClient = new ShelbyClient({
-        network: Network.TESTNET,
-        apiKey: process.env.NEXT_PUBLIC_SHELBY_API_KEY || '',
-      });
-      const provider = await createDefaultErasureCodingProvider();
-      const config = defaultErasureCodingConfig();
 
       const safeBase = baseTitle.trim().toLowerCase().replace(/[^a-z0-9]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
       const tagList = [...tags.split(',').map(t => t.trim()).filter(Boolean), ...selectedCategories];
@@ -245,6 +239,14 @@ export default function CreatePage() {
         toast.loading(`Publishing ${finalTitle} (${i + 1}/${stagedFiles.length})…`, { id: 'upload' });
 
         try {
+          // Re-instantiate SDKs for EVERY file to prevent internal state/multipart bugs!
+          const shelbyClient = new ShelbyClient({
+            network: Network.TESTNET,
+            apiKey: process.env.NEXT_PUBLIC_SHELBY_API_KEY || '',
+          });
+          const provider = await createDefaultErasureCodingProvider();
+          const config = defaultErasureCodingConfig();
+
           // Step 1: Encrypt the file before upload
           const { generateEncryptionKey, encryptData } = await import('@/lib/encryption');
           const encKey = await generateEncryptionKey();
