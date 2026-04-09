@@ -15,6 +15,13 @@ export async function GET(request: NextRequest) {
 
     const listed = await prisma.file.count({ where: { userId: user.id, isPublished: true } });
 
+    // Storage stats
+    const totalFiles = await prisma.file.count({ where: { userId: user.id } });
+    const storageAgg = await prisma.file.aggregate({
+      where: { userId: user.id },
+      _sum: { size: true, storageFee: true },
+    });
+
     // Sales of content owned by this user
     const userFiles = await prisma.file.findMany({
       where: { userId: user.id, contentId: { not: null } },
@@ -47,6 +54,9 @@ export async function GET(request: NextRequest) {
       sold: soldCount,
       earned: Number(earnedAgg._sum.amountPaid ?? 0),
       purchased,
+      totalFiles,
+      totalStorageFees: Number(storageAgg._sum.storageFee ?? 0),
+      totalStorageBytes: (storageAgg._sum.size ?? BigInt(0)).toString(),
     });
   } catch (error) {
     console.error('Profile stats error:', error);

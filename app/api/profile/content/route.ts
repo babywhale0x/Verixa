@@ -23,10 +23,12 @@ export async function GET(request: NextRequest) {
         size: true,
         isPublished: true,
         isPublic: true,
+        encrypted: true,
         previewUrl: true,
         description: true,
         createdAt: true,
         contentId: true,
+        storageFee: true,
       },
     });
 
@@ -34,6 +36,7 @@ export async function GET(request: NextRequest) {
       ...f,
       size: f.size.toString(),
       contentId: f.contentId ? f.contentId.toString() : null,
+      storageFee: f.storageFee ? f.storageFee.toString() : null,
       createdAt: f.createdAt.toISOString()
     }));
 

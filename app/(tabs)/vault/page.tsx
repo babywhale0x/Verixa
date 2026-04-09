@@ -17,6 +17,7 @@ interface StoredFile {
   isPublic: boolean;
   encrypted: boolean;
   createdAt: string;
+  storageFee: number | null;
 }
 
 export default function VaultPage() {
@@ -160,7 +161,13 @@ export default function VaultPage() {
             blobData: encryptedData,
           });
 
-          // Step 5: Save metadata + encryption key to DB
+          // Step 5: Calculate storage fee based on actual file size
+          // Shelby charges ~0.012 SUSD per GB per year, proportional to actual size
+          const fileSizeGB = file.size / 1073741824;
+          const feePerGBYear = 0.012; // SUSD
+          const calculatedFee = Math.max(fileSizeGB * feePerGBYear, 0.0001); // min floor
+
+          // Step 6: Save metadata + encryption key + fee to DB
           await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -174,6 +181,7 @@ export default function VaultPage() {
               encrypted: true,
               encryptionKey: encKey,
               description: stagedDescription || null,
+              storageFee: parseFloat(calculatedFee.toFixed(8)),
             }),
           });
 
@@ -326,8 +334,10 @@ export default function VaultPage() {
             </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Total Storage Fees (Yearly Rate)</p>
-            <p className="text-2xl font-bold text-green-600">{((Number(storageStats.totalBytes) / 1073741824) * 0.012).toFixed(4)} SUSD</p>
+            <p className="text-sm text-gray-600">Total Fees Paid</p>
+            <p className="text-2xl font-bold text-green-600">
+              {files.reduce((sum, f) => sum + (f.storageFee || 0), 0).toFixed(4)} SUSD
+            </p>
           </div>
         </div>
 
@@ -468,7 +478,7 @@ export default function VaultPage() {
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">File</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Size</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Yearly Fee</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Fee Paid</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Type</th>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Status</th>
                   <th className="px-6 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
@@ -486,8 +496,8 @@ export default function VaultPage() {
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {formatFileSize(file.size)}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600 font-medium text-green-600">
-                      {((Math.ceil(Number(file.size) / 1073741824) * 1200000) / 1e8).toFixed(4)} SUSD
+                    <td className="px-6 py-4 text-sm font-medium text-green-600">
+                      {file.storageFee != null ? file.storageFee.toFixed(4) : '—'} SUSD
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-600">
                       {file.contentType}

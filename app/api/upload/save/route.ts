@@ -25,6 +25,8 @@ export async function POST(request: NextRequest) {
       commercialPrice,
       subscriptionPrice,
       onChainContentId,
+      // Fee tracking
+      storageFee,
     } = body;
 
     let user = await prisma.user.findUnique({ where: { walletAddress } });
@@ -53,6 +55,7 @@ export async function POST(request: NextRequest) {
         encryptionKey: encryptionKey || null,
         isPublic: isPublic || false,
         isPublished,
+        storageFee: storageFee != null ? storageFee : null,
         contentId: onChainContentId ? BigInt(onChainContentId) : null,
         publishedAt: isPublished ? new Date() : null,
         description: description || null,

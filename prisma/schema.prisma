@@ -60,6 +60,7 @@ model File {
   previewUrl    String?
   isPublic      Boolean  @default(false)
   isPublished   Boolean  @default(false)
+  storageFee    Decimal? @db.Decimal(20, 8)
   contentId     BigInt?
   publishedAt   DateTime?
   createdAt     DateTime @default(now())

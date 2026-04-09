@@ -5,7 +5,8 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { 
   User, ExternalLink, Copy, History, Download, Eye, Lock, 
   Crown, Play, Image as ImageIcon, FileText, Music, BarChart2,
-  Package, DollarSign, Tag, Check, X, Loader2, ArrowUpRight, ArrowDownLeft
+  Package, DollarSign, Tag, Check, X, Loader2, ArrowUpRight, ArrowDownLeft,
+  HardDrive, Clock, Receipt
 } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
 import { FiatOnramp } from '@/components/wallet/FiatOnramp';
@@ -16,6 +17,9 @@ interface ProfileStats {
   sold: number;
   earned: number;
   purchased: number;
+  totalFiles: number;
+  totalStorageFees: number;
+  totalStorageBytes: string;
 }
 
 interface MyContent {
@@ -23,10 +27,13 @@ interface MyContent {
   blobId: string;
   name: string;
   contentType: string;
+  size: string;
   isPublished: boolean;
+  encrypted: boolean;
   previewUrl: string | null;
   createdAt: string;
   contentId: string | null;
+  storageFee: string | null;
 }
 
 interface PurchasedItem {
@@ -60,6 +67,15 @@ function getTypeIcon(type: string) {
   return <FileText className="w-5 h-5 text-green-500" />;
 }
 
+function formatBytes(bytes: string | number) {
+  const num = typeof bytes === 'string' ? Number(bytes) : bytes;
+  if (!num || num === 0) return '0 B';
+  const k = 1024;
+  const sizes = ['B', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(num) / Math.log(k));
+  return parseFloat((num / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
 export default function ProfilePage() {
   const { connected, account } = useWallet();
   const [activeTab, setActiveTab] = useState<'items' | 'purchases' | 'history'>('items');
@@ -67,7 +83,7 @@ export default function ProfilePage() {
   
   const [aptBalance, setAptBalance] = useState<number | null>(null);
   const [shelbyBalance, setShelbyBalance] = useState<number | null>(null);
-  const [stats, setStats] = useState<ProfileStats>({ listed: 0, sold: 0, earned: 0, purchased: 0 });
+  const [stats, setStats] = useState<ProfileStats>({ listed: 0, sold: 0, earned: 0, purchased: 0, totalFiles: 0, totalStorageFees: 0, totalStorageBytes: '0' });
   
   const [myFiles, setMyFiles] = useState<MyContent[]>([]);
   const [purchases, setPurchases] = useState<PurchasedItem[]>([]);
@@ -278,6 +294,48 @@ export default function ProfilePage() {
         ))}
       </div>
 
+      {/* ─── Storage Tracker ─── */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl" />
+          <div className="bg-emerald-50 flex items-center justify-center rounded-lg w-10 h-10">
+            <Receipt className="w-5 h-5 text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Total Fees Paid</p>
+            <div className="text-xl font-bold mt-0.5 text-emerald-600">
+              {isLoadingStats ? <div className="h-6 w-20 skeleton rounded mt-1" /> : `${stats.totalStorageFees.toFixed(4)} SUSD`}
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-cyan-500/10 rounded-full blur-2xl" />
+          <div className="bg-cyan-50 flex items-center justify-center rounded-lg w-10 h-10">
+            <HardDrive className="w-5 h-5 text-cyan-500" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Total Storage</p>
+            <div className="text-xl font-bold mt-0.5">
+              {isLoadingStats ? <div className="h-6 w-20 skeleton rounded mt-1" /> : formatBytes(stats.totalStorageBytes)}
+            </div>
+          </div>
+        </div>
+
+        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl" />
+          <div className="bg-amber-50 flex items-center justify-center rounded-lg w-10 h-10">
+            <Clock className="w-5 h-5 text-amber-500" />
+          </div>
+          <div>
+            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Files Uploaded</p>
+            <div className="text-xl font-bold mt-0.5">
+              {isLoadingStats ? <div className="h-6 w-16 skeleton rounded mt-1" /> : stats.totalFiles}
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* ─── Content Tabs ─── */}
       <div className="pt-4">
         <div className="flex gap-6 border-b border-theme mb-6">
@@ -315,7 +373,13 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {myFiles.map(file => (
+                {myFiles.map(file => {
+                  const expiryDate = new Date(new Date(file.createdAt).getTime() + 365 * 24 * 60 * 60 * 1000);
+                  const daysLeft = Math.max(0, Math.floor((expiryDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)));
+                  const isExpired = daysLeft === 0;
+                  const isExpiringSoon = daysLeft > 0 && daysLeft <= 30;
+
+                  return (
                   <div key={file.id} className={`card overflow-hidden transition-all ${file.isPublished ? 'border-theme' : 'border-red-500/30 opacity-75'}`}>
                     <div className="h-32 bg-secondary relative flex items-center justify-center">
                       {file.previewUrl ? (
@@ -333,7 +397,29 @@ export default function ProfilePage() {
                     
                     <div className="p-4 bg-surface">
                       <h4 className="font-semibold mb-1 truncate">{file.name}</h4>
-                      <p className="text-xs text-muted mb-4">{new Date(file.createdAt).toLocaleDateString()}</p>
+                      <p className="text-xs text-muted mb-2">{new Date(file.createdAt).toLocaleDateString()}</p>
+
+                      {/* Per-file tracking details */}
+                      <div className="space-y-1.5 mb-3 text-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-secondary flex items-center gap-1"><Receipt className="w-3 h-3" /> Fee Paid</span>
+                          <span className="font-semibold text-emerald-600">
+                            {file.storageFee ? `${parseFloat(file.storageFee).toFixed(4)} SUSD` : '—'}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-secondary flex items-center gap-1"><HardDrive className="w-3 h-3" /> Size</span>
+                          <span className="font-medium">{formatBytes(file.size)}</span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-secondary flex items-center gap-1"><Clock className="w-3 h-3" /> Expiry</span>
+                          <span className={`font-semibold ${
+                            isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : 'text-secondary'
+                          }`}>
+                            {isExpired ? 'Expired' : `${daysLeft}d left`}
+                          </span>
+                        </div>
+                      </div>
                       
                       <div className="flex gap-2">
                         <button 
@@ -357,7 +443,8 @@ export default function ProfilePage() {
                       </div>
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
