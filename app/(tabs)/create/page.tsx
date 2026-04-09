@@ -232,6 +232,10 @@ export default function CreatePage() {
       const commercialPrice = tiers[TIER_COMMERCIAL].enabled ? aptToOctas(tiers[TIER_COMMERCIAL].price || 0) : 0;
       const subscriptionPrice = tiers[TIER_SUBSCRIPTION].enabled ? aptToOctas(tiers[TIER_SUBSCRIPTION].price || 0) : 0;
 
+      // Track the total on-chain items for this creator to ensure we capture the distinct new additions
+      const { getCreatorContents } = await import('@/lib/contract-queries');
+      let currentContentCount = (await getCreatorContents(account.address.toString())).length;
+
       for (let i = 0; i < stagedFiles.length; i++) {
         const file = stagedFiles[i];
         const finalTitle = stagedFiles.length === 1 ? baseTitle.trim() : `${baseTitle.trim()} ${i + 1}`;
@@ -309,9 +313,17 @@ export default function CreatePage() {
           });
           await aptosClient.waitForTransaction({ transactionHash: publishTx.hash });
 
-          // Get the actual on-chain content ID assigned by the contract
-          const { getCreatorContents } = await import('@/lib/contract-queries');
-          const contentIds = await getCreatorContents(account.address.toString());
+          // Get the actual on-chain content ID assigned by the contract by waiting for the indexer
+          let contentIds = await getCreatorContents(account.address.toString());
+          let retries = 0;
+          // Poll until the chain registers the newly published content
+          while (contentIds.length <= currentContentCount && retries < 15) {
+            await new Promise(r => setTimeout(r, 1000));
+            contentIds = await getCreatorContents(account.address.toString());
+            retries++;
+          }
+          
+          currentContentCount = contentIds.length;
           const onChainContentId = contentIds.length > 0
             ? contentIds[contentIds.length - 1].toString()
             : Date.now().toString();
