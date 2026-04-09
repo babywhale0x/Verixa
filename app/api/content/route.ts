@@ -43,10 +43,10 @@ export async function GET(request: NextRequest) {
     let orderBy: any;
     switch (sort) {
       case 'price_asc':
-        orderBy = { viewPrice: 'asc' };
+        orderBy = { streamPrice: 'asc' };
         break;
       case 'price_desc':
-        orderBy = { viewPrice: 'desc' };
+        orderBy = { streamPrice: 'desc' };
         break;
       default:
         orderBy = { uploadTimestamp: 'desc' };
@@ -71,8 +71,8 @@ export async function GET(request: NextRequest) {
       contentType: c.contentType,
       previewUrl: c.previewCid || null,
       shelbyBlobId: c.shelbyBlobId,
-      viewPrice: c.viewPrice.toString(),
-      borrowPrice: c.borrowPrice.toString(),
+      streamPrice: c.streamPrice.toString(),
+      citePrice: c.citePrice.toString(),
       licensePrice: c.licensePrice.toString(),
       commercialPrice: c.commercialPrice.toString(),
       subscriptionPrice: c.subscriptionPrice.toString(),
