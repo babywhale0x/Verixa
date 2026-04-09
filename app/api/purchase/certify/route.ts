@@ -18,13 +18,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    // 1. Verify user exists
-    const user = await prisma.user.findUnique({
+    // 1. Verify or create user
+    let user = await prisma.user.findUnique({
       where: { walletAddress: buyerAddress },
     });
 
     if (!user) {
-      return NextResponse.json({ error: 'User not found in system' }, { status: 404 });
+      // Auto-create user for first-time buyers
+      user = await prisma.user.create({
+        data: {
+          walletAddress: buyerAddress,
+        }
+      });
     }
 
     // 2. Fetch content details

@@ -100,7 +100,7 @@ export default function ContentDetailPage() {
 
       // 1. Sync the permanent certificate with our backend 
       try {
-        await fetch('/api/purchase/certify', {
+        const certRes = await fetch('/api/purchase/certify', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -111,11 +111,17 @@ export default function ContentDetailPage() {
             amount: priceMap[tier] || 0
           })
         });
-      } catch (err) {
+        
+        if (!certRes.ok) {
+          const errData = await certRes.json();
+          throw new Error(errData.error || 'Failed to generate certificate');
+        }
+        toast.success('Purchase successful! Certificate generated.');
+      } catch (err: any) {
         console.error("Failed to sync certificate implicitly: ", err);
+        toast.error(`Transaction confirmed, but certificate failed: ${err.message}. Please refresh.`);
       }
 
-      toast.success('Purchase successful! Certificate generated.');
       // Re-fetch to update access dynamically
       setTimeout(fetchContent, 2000);
     } catch (error) {
