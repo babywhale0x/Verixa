@@ -11,7 +11,8 @@ interface ContentItem {
   title: string;
   creator: string;
   contentType: string;
-  viewPrice: string;
+  streamPrice: string;
+  citePrice: string;
   previewUrl?: string;
   tags: string[];
   uploadTimestamp: string;
@@ -233,7 +234,7 @@ export default function HomePage() {
                         <div className="flex items-center justify-between">
                           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>From</span>
                           <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
-                            {Number(item.viewPrice) > 0 ? formatApt(Number(item.viewPrice)) : 'Free'}
+                            {Number(item.streamPrice) > 0 ? formatApt(Number(item.streamPrice)) : 'Free'}
                           </span>
                         </div>
                       </div>
@@ -285,7 +286,7 @@ export default function HomePage() {
                       <div className="flex items-center justify-between pt-3" style={{ borderTop: '1px solid var(--border)' }}>
                         <span className="text-xs" style={{ color: 'var(--text-muted)' }}>Floor price</span>
                         <span className="font-bold" style={{ color: 'var(--accent)' }}>
-                          {Number(item.viewPrice) > 0 ? formatApt(Number(item.viewPrice)) : 'Free'}
+                          {Number(item.streamPrice) > 0 ? formatApt(Number(item.streamPrice)) : 'Free'}
                         </span>
                       </div>
                     </div>

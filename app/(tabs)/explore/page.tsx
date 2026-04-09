@@ -12,7 +12,8 @@ interface Content {
   description: string;
   contentType: string;
   previewUrl?: string;
-  viewPrice: string;
+  streamPrice: string;
+  citePrice: string;
   licensePrice: string;
   tags: string[];
   uploadTimestamp: string;
@@ -121,7 +122,7 @@ function ContentCard({ content }: { content: Content }) {
         <div className="flex items-center justify-between mt-3 pt-3" style={{ borderTop: '1px solid var(--border)' }}>
           <span className="text-xs" style={{ color: 'var(--text-muted)' }}>From</span>
           <span className="text-sm font-bold" style={{ color: 'var(--accent)' }}>
-            {Number(content.viewPrice) > 0 ? formatApt(Number(content.viewPrice)) : 'Free'}
+            {Number(content.streamPrice) > 0 ? formatApt(Number(content.streamPrice)) : 'Free'}
           </span>
         </div>
         {/* Tags */}
@@ -209,7 +210,7 @@ export default function ExplorePage() {
     const minApt = parseFloat(minPrice) || 0;
     const maxApt = parseFloat(maxPrice) || Infinity;
     list = list.filter(c => {
-      const price = Number(c.viewPrice) / 1e8;
+      const price = Number(c.streamPrice) / 1e8;
       return price >= minApt && price <= maxApt;
     });
 

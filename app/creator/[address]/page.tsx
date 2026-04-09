@@ -20,7 +20,7 @@ interface Content {
   contentId: bigint;
   title: string;
   contentType: string;
-  viewPrice: bigint;
+  streamPrice: bigint;
 }
 
 export default function CreatorProfilePage() {
@@ -63,7 +63,7 @@ export default function CreatorProfilePage() {
           contentId: id,
           title: `Content #${id.toString()}`,
           contentType: 'image/jpeg',
-          viewPrice: BigInt(100000),
+          streamPrice: BigInt(100000),
         });
       }
       setContents(contentsData);
@@ -228,7 +228,7 @@ export default function CreatorProfilePage() {
                       {content.contentType.split('/')[1].toUpperCase()}
                     </span>
                     <span className="font-semibold text-blue-600">
-                      {formatApt(Number(content.viewPrice))}
+                      {formatApt(Number(content.streamPrice))}
                     </span>
                   </div>
                 </div>
