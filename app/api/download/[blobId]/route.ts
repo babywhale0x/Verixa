@@ -24,18 +24,35 @@ export async function GET(
       );
     }
 
-    // Check access permissions
+  // Check access permissions
     let hasAccess = false;
 
     if (file.isPublic && !file.encrypted) {
       hasAccess = true;
     } else if (walletAddress && file.user.walletAddress === walletAddress) {
       hasAccess = true;
+    } else if (walletAddress && file.contentId != null) {
+      // For marketplace content, check if the user has purchased a downloadable tier
+      const user = await prisma.user.findUnique({
+        where: { walletAddress },
+      });
+      if (user) {
+        const purchases = await prisma.purchase.findMany({
+          where: {
+            userId: user.id,
+            contentId: file.contentId,
+          },
+        });
+        // TIER_LICENSE = 3, TIER_COMMERCIAL = 4 are downloadable
+        if (purchases.some((p: any) => p.tier >= 3)) {
+          hasAccess = true;
+        }
+      }
     }
 
     if (!hasAccess) {
       return NextResponse.json(
-        { error: 'Access denied' },
+        { error: 'Access denied or download not permitted for this tier' },
         { status: 403 }
       );
     }

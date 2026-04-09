@@ -234,7 +234,7 @@ export default function VaultPage() {
 
   const handleDownload = async (blobId: string, name: string) => {
     try {
-      const response = await fetch(`/api/download/${blobId}`);
+      const response = await fetch(`/api/download/${blobId}?wallet=${account?.address?.toString() || ''}`);
       if (response.ok) {
         const blob = await response.blob();
         const url = window.URL.createObjectURL(blob);

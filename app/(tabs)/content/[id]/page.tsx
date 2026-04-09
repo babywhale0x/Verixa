@@ -27,6 +27,7 @@ export default function ContentDetailPage() {
   const { connected, account, signAndSubmitTransaction } = useWallet();
   const [content, setContent] = useState<ContentDetail | null>(null);
   const [hasAccess, setHasAccess] = useState(false);
+  const [canDownload, setCanDownload] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [selectedTier, setSelectedTier] = useState<number | null>(null);
@@ -47,8 +48,16 @@ export default function ContentDetailPage() {
 
       // Check if user has access
       if (connected && account) {
-        // In production, check on-chain
-        setHasAccess(false);
+        try {
+          const accessRes = await fetch(`/api/content/${params.id}/access?wallet=${account.address.toString()}`);
+          if (accessRes.ok) {
+            const accessData = await accessRes.json();
+            setHasAccess(accessData.hasAccess);
+            setCanDownload(accessData.canDownload);
+          }
+        } catch (e) {
+          console.error('Failed to check access:', e);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch content:', error);
@@ -81,8 +90,9 @@ export default function ContentDetailPage() {
         },
       });
 
-      toast.success('Purchase successful!');
-      setHasAccess(true);
+      toast.success('Purchase successful! Please wait a moment while we process it...');
+      // Re-fetch to update access dynamically
+      setTimeout(fetchContent, 2000);
     } catch (error) {
       console.error('Purchase failed:', error);
       toast.error('Purchase failed');
@@ -136,16 +146,16 @@ export default function ContentDetailPage() {
           <div className="lg:col-span-2">
             <div className="card overflow-hidden mb-6">
               <div className="relative aspect-video bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center overflow-hidden">
-                {content.previewUrl ? (
+                {content.previewUrl || (hasAccess && (content as any).shelbyBlobId) ? (
                   content.contentType.startsWith('audio/') ? (
                     <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 bg-gradient-to-br from-purple-900 to-pink-900">
                       <Music className="w-16 h-16 text-purple-300" />
-                      <audio src={content.previewUrl} controls className="w-full max-w-sm" />
+                      <audio src={hasAccess && (content as any).shelbyBlobId ? `/api/download/${(content as any).shelbyBlobId}?wallet=${account?.address?.toString()}` : content.previewUrl} controls className="w-full max-w-sm" />
                     </div>
                   ) : content.contentType.startsWith('video/') ? (
-                    <video src={content.previewUrl} className="w-full h-full object-cover" controls />
+                    <video src={hasAccess && (content as any).shelbyBlobId ? `/api/download/${(content as any).shelbyBlobId}?wallet=${account?.address?.toString()}` : content.previewUrl} className="w-full h-full object-cover" controls />
                   ) : (
-                    <img src={content.previewUrl} alt={content.title} className="w-full h-full object-cover" />
+                    <img src={hasAccess && (content as any).shelbyBlobId ? `/api/download/${(content as any).shelbyBlobId}?wallet=${account?.address?.toString()}` : content.previewUrl} alt={content.title} className="w-full h-full object-cover" />
                   )
                 ) : content.contentType.startsWith('audio/') ? (
                   <div className="flex flex-col items-center gap-3 text-white">
@@ -235,18 +245,46 @@ export default function ContentDetailPage() {
               {hasAccess ? (
                 <div className="space-y-4">
                   <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <div className="flex items-center gap-2 text-green-700">
+                    <div className="flex items-center gap-2 text-green-700 mb-1">
                       <Shield className="w-5 h-5" />
                       <span className="font-medium">You have access</span>
                     </div>
+                    {canDownload ? (
+                      <p className="text-sm text-green-600">You can download this content.</p>
+                    ) : (
+                      <p className="text-sm text-green-600">You can view/stream this content.</p>
+                    )}
                   </div>
-                  <button
-                    onClick={() => toast.success('Download starting...')}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
-                  >
-                    <Download className="w-5 h-5" />
-                    Download
-                  </button>
+                  {canDownload && (
+                    <button
+                      onClick={async () => {
+                        const blobId = (content as any).shelbyBlobId;
+                        if (!blobId) return toast.error('File not found');
+                        try {
+                          toast.loading('Downloading...', { id: 'download' });
+                          const res = await fetch(`/api/download/${blobId}?wallet=${account?.address?.toString()}`);
+                          if (res.ok) {
+                            const blob = await res.blob();
+                            const url = window.URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = content.title;
+                            a.click();
+                            window.URL.revokeObjectURL(url);
+                            toast.success('Download complete!', { id: 'download' });
+                          } else {
+                            toast.error('Failed to download', { id: 'download' });
+                          }
+                        } catch (e) {
+                          toast.error('Download error', { id: 'download' });
+                        }
+                      }}
+                      className="w-full py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
+                    >
+                      <Download className="w-5 h-5" />
+                      Download Final File
+                    </button>
+                  )}
                 </div>
               ) : (
                 <div className="space-y-3">
