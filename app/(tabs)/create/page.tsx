@@ -329,7 +329,7 @@ export default function CreatePage() {
             : Date.now().toString();
 
           // NOW save metadata + pricing + encryption key with the real on-chain content ID
-          await fetch('/api/upload/save', {
+          const saveRes = await fetch('/api/upload/save', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -353,6 +353,10 @@ export default function CreatePage() {
               onChainContentId,
             }),
           });
+          
+          if (!saveRes.ok) {
+            throw new Error('Database sync failed. The item is on-chain but metadata failed to save.');
+          }
 
           toast.success(`Published: ${finalTitle}`, { id: 'upload' });
         } catch (err: any) {
