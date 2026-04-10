@@ -38,7 +38,9 @@ interface MyContent {
 }
 
 interface PurchasedItem {
-  id: string;
+  id?: string;
+  purchaseId?: string;
+  contentId: string;
   tierId: number;
   amountPaid: number;
   purchaseTimestamp: string;
@@ -468,10 +470,10 @@ export default function ProfilePage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {purchases.map(p => {
+                {purchases.map((p, pIdx) => {
                   const firstFile = p.content.files[0];
                   return (
-                    <div key={p.id} className="card overflow-hidden hover-lift flex flex-col">
+                    <div key={p.purchaseId || p.id || pIdx} className="card overflow-hidden hover-lift flex flex-col">
                       <div className="h-32 relative bg-secondary flex items-center justify-center">
                         {firstFile && firstFile.previewUrl ? (
                            firstFile.contentType.startsWith('image/') 
@@ -492,17 +494,20 @@ export default function ProfilePage() {
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <button 
-                            onClick={() => setSelectedCertificate(p)}
-                            className="flex-1 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
-                          >
-                            <Shield className="w-3.5 h-3.5" /> Certificate
-                          </button>
+                          {p.tierId >= 2 && (
+                            <button 
+                              onClick={() => setSelectedCertificate(p)}
+                              className="flex-1 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                            >
+                              <Shield className="w-3.5 h-3.5" /> {p.tierId === 2 ? 'Cite' : 'Certificate'}
+                            </button>
+                          )}
                           <a 
-                            href={`/vault`} 
-                            className="flex-1 py-2 bg-gray-900 text-white rounded-lg hover:bg-black text-xs font-semibold transition-colors flex items-center justify-center"
+                            href={`/content/${p.contentId}`} 
+                            className="flex-1 py-2 bg-gray-900 text-white rounded-lg hover:bg-black text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
                           >
-                            Vault
+                            {(p.tierId === 3 || p.tierId === 4) ? <Download className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                            View
                           </a>
                         </div>
                       </div>
