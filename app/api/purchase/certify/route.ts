@@ -41,12 +41,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Content not found' }, { status: 404 });
     }
 
-    // 3. Verify on-chain transaction hash exists and is valid (optional but recommended)
-    try {
-      await aptos.waitForTransaction({ transactionHash: txHash });
-    } catch (e) {
-      console.warn('Transaction hash could not be verified actively, proceeding anyway: ', txHash);
-    }
+    // 3. Removed on-chain wait to prevent Vercel 10s timeout aborting the DB save
 
     // 4. Generate Certificate JSON payload
     const tierName = getTierName(Number(tier));
@@ -85,13 +80,22 @@ export async function POST(request: NextRequest) {
     const certFileName = `certificate.json`;
 
     let shelbyBlobUrl = '';
+    
+    // Create a 5 second timeout to prevent Vercel serverless function kills
+    const timeoutPromise = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Shelby upload timeout')), 5000)
+    );
+
     try {
-      const uploadResult = await completeUpload(
-        certBlobId,
-        certBuffer,
-        'application/json',
-        certFileName
-      );
+      const uploadResult = await Promise.race([
+        completeUpload(
+          certBlobId,
+          certBuffer,
+          'application/json',
+          certFileName
+        ),
+        timeoutPromise
+      ]) as any;
       shelbyBlobUrl = uploadResult.blobName; // This acts as our permanent receipt identifier
     } catch (uploadError) {
       console.error('Failed to upload certificate to Shelby:', uploadError);
