@@ -40,6 +40,11 @@ export async function GET(request: NextRequest) {
       const content = contents.find(c => c.id === p.contentId);
       const contentFiles = files.filter(f => f.contentId === p.contentId);
       
+      const safeContentFiles = contentFiles.map(f => ({
+        ...f,
+        contentId: f.contentId ? f.contentId.toString() : null
+      }));
+      
       return {
         ...p,
         // Convert BigInts to string for JSON serialization
@@ -48,7 +53,7 @@ export async function GET(request: NextRequest) {
         amountPaid: Number(p.amountPaid) || 0,
         content: content ? {
           title: content.title,
-          files: contentFiles
+          files: safeContentFiles
         } : {
           title: 'Unknown Content',
           files: []

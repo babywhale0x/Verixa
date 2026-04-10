@@ -88,14 +88,19 @@ export async function completeUpload(
 }
 
 export async function downloadBlob(
-  blobName: string
+  blobName: string,
+  ownerAddress?: string
 ): Promise<Buffer> {
   try {
     const client = await getShelbyClient();
     const account = getAccount();
+    
+    // If ownerAddress is specified (e.g. content uploaded by creator), use it.
+    // Otherwise default to the server's account address.
+    const targetAccount = ownerAddress || account.accountAddress;
 
     const blob = await client.download({
-      account: account.accountAddress,
+      account: targetAccount,
       blobName,
     });
 

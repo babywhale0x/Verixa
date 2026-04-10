@@ -57,8 +57,8 @@ export async function GET(
       );
     }
 
-    // Retrieve from Shelby using blobId as blobName
-    const data = await downloadBlob(blobId);
+    // Retrieve from Shelby using blobId as blobName and the file's creator as the account
+    const data = await downloadBlob(blobId, file.user.walletAddress);
 
     return new NextResponse(new Uint8Array(data), {
       headers: {
