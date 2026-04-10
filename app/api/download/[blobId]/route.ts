@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { downloadBlob } from '@/lib/shelby';
 import { prisma } from '@/lib/db';
+import { decryptData } from '@/lib/encryption';
 
 export async function GET(
   request: NextRequest,
@@ -60,12 +61,18 @@ export async function GET(
     // Retrieve from Shelby using blobId as blobName and the file's creator as the account
     const data = await downloadBlob(blobId, file.user.walletAddress);
 
-    return new NextResponse(new Uint8Array(data), {
+    let outputData: any = new Uint8Array(data);
+    
+    if (file.encrypted && file.encryptionKey) {
+      outputData = await decryptData(outputData, file.encryptionKey);
+    }
+
+    return new NextResponse(outputData as any, {
       headers: {
         'Content-Type': file.contentType,
         'Content-Disposition': `attachment; filename="${file.name}"`,
         'Cache-Control': 'private, no-cache',
-        'Content-Length': data.length.toString(),
+        'Content-Length': outputData.length.toString(),
       },
     });
   } catch (error) {
