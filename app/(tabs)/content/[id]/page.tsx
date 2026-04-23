@@ -235,7 +235,14 @@ export default function ContentDetailPage() {
                   <button className="p-2 hover:bg-gray-100 rounded-lg">
                     <Heart className="w-5 h-5" />
                   </button>
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <button 
+                    onClick={() => {
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success('Link copied to clipboard!');
+                    }}
+                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    title="Share this content"
+                  >
                     <Share2 className="w-5 h-5" />
                   </button>
                 </div>
