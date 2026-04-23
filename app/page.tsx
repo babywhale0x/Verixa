@@ -4,6 +4,7 @@ import { ArrowRight, Shield, Zap, Globe, Music, Image as ImageIcon, FileText, Vi
 import { ConnectButton } from '@/components/wallet/ConnectButton';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
 import { motion } from 'framer-motion';
+import { MatrixText } from '@/components/ui/MatrixText';
 
 export default function HomePage() {
   return (
@@ -33,30 +34,10 @@ export default function HomePage() {
       <section className="bg-gradient-to-b from-blue-50 to-[var(--bg)] dark:from-blue-900/10 dark:to-[var(--bg)] py-20 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[var(--text-primary)] leading-tight">
-            <span className="overflow-hidden inline-flex align-bottom h-[1.3em]">
-              <motion.span 
-                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
-                className="inline-block"
-              >Your&nbsp;</motion.span>
-            </span>
-            <span className="overflow-hidden inline-flex align-bottom h-[1.3em]">
-              <motion.span 
-                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
-                className="inline-block"
-              >Files.</motion.span>
-            </span>
+            <MatrixText text="Your Files." delay={0.1} />
             <br />
-            <span className="overflow-hidden inline-flex align-bottom h-[1.3em] text-blue-600 dark:text-blue-400">
-              <motion.span 
-                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
-                className="inline-block"
-              >Your&nbsp;</motion.span>
-            </span>
-            <span className="overflow-hidden inline-flex align-bottom h-[1.3em] text-blue-600 dark:text-blue-400">
-              <motion.span 
-                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
-                className="inline-block"
-              >Earnings.</motion.span>
+            <span className="text-blue-600 dark:text-blue-400">
+              <MatrixText text="Your Earnings." delay={0.4} />
             </span>
           </h1>
           <motion.p 
@@ -101,6 +82,9 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-3 gap-8">
             <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.0 }}
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
@@ -115,6 +99,9 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.2 }}
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
@@ -129,6 +116,9 @@ export default function HomePage() {
             </motion.div>
 
             <motion.div 
+              initial={{ opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.4 }}
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
