@@ -1,100 +1,204 @@
+'use client';
 import Link from 'next/link';
-import { ArrowRight, Music, Image as ImageIcon, FileText, Video } from 'lucide-react';
+import { ArrowRight, Shield, Zap, Globe, Music, Image as ImageIcon, FileText, Video } from 'lucide-react';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
-import { CustomCursor } from '@/components/landing/CustomCursor';
-import { HeroSection } from '@/components/landing/HeroSection';
-import { FeatureCards } from '@/components/landing/FeatureCards';
-import { AnimatedSection } from '@/components/landing/AnimatedSection';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { motion } from 'framer-motion';
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0b0e14] text-black dark:text-white transition-colors duration-500 overflow-x-hidden selection:bg-blue-500/30">
-      <CustomCursor />
-      
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-500">
       {/* Header */}
-      <header className="fixed top-0 w-full z-[100] bg-white/70 dark:bg-[#0b0e14]/70 backdrop-blur-xl border-b border-gray-100 dark:border-white/10 transition-colors duration-500">
+      <header className="bg-[var(--surface)] border-b border-[var(--border)] transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            <div className="flex items-center gap-3 group cursor-pointer">
-              <div className="w-10 h-10 bg-blue-500 rounded-xl shadow-[0_0_20px_rgba(59,130,246,0.4)] group-hover:scale-105 transition-transform duration-300" />
-              <span className="text-2xl font-black tracking-tight">Verixa</span>
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg" />
+              <span className="text-xl font-bold">Verixa</span>
             </div>
-            <nav className="hidden md:flex items-center gap-8 font-medium">
-              <Link href="/explore" className="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors">Explore</Link>
-              <Link href="/vault" className="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors">Vault</Link>
-              <Link href="/create" className="text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white transition-colors">Create</Link>
+            <nav className="hidden md:flex items-center gap-8">
+              <Link href="/explore" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Explore</Link>
+              <Link href="/vault" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Vault</Link>
+              <Link href="/create" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">Create</Link>
             </nav>
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
               <ConnectButton />
             </div>
           </div>
         </div>
       </header>
 
-      {/* Hero Section */}
-      <HeroSection />
+      {/* Hero */}
+      <section className="bg-gradient-to-b from-blue-50 to-[var(--bg)] dark:from-blue-900/10 dark:to-[var(--bg)] py-20 transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[var(--text-primary)] leading-tight">
+            <span className="overflow-hidden inline-flex align-bottom h-[1.3em]">
+              <motion.span 
+                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+                className="inline-block"
+              >Your&nbsp;</motion.span>
+            </span>
+            <span className="overflow-hidden inline-flex align-bottom h-[1.3em]">
+              <motion.span 
+                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+                className="inline-block"
+              >Files.</motion.span>
+            </span>
+            <br />
+            <span className="overflow-hidden inline-flex align-bottom h-[1.3em] text-blue-600 dark:text-blue-400">
+              <motion.span 
+                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+                className="inline-block"
+              >Your&nbsp;</motion.span>
+            </span>
+            <span className="overflow-hidden inline-flex align-bottom h-[1.3em] text-blue-600 dark:text-blue-400">
+              <motion.span 
+                initial={{ y: "100%" }} animate={{ y: "0%" }} transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
+                className="inline-block"
+              >Earnings.</motion.span>
+            </span>
+          </h1>
+          <motion.p 
+            className="text-xl text-[var(--text-secondary)] max-w-2xl mx-auto mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+          >
+            Decentralized storage meets creator marketplace. Store files permanently,
+            publish creative work, and earn directly to your wallet.
+          </motion.p>
+          <motion.div 
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.8, duration: 0.5 }}
+          >
+            <Link href="/vault">
+              <motion.div
+                whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(37, 99, 235, 0.3)" }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2 group cursor-pointer"
+              >
+                Start Storing <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.div>
+            </Link>
+            <Link href="/explore">
+              <motion.div
+                whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(0, 0, 0, 0.05)" }}
+                whileTap={{ scale: 0.95 }}
+                className="px-8 py-4 bg-[var(--surface)] text-[var(--text-primary)] rounded-xl font-semibold border-2 border-[var(--border)] hover:bg-[var(--surface-hover)] transition-colors cursor-pointer"
+              >
+                Explore Creators
+              </motion.div>
+            </Link>
+          </motion.div>
+        </div>
+      </section>
 
-      {/* Features Section */}
-      <FeatureCards />
+      {/* Features */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid md:grid-cols-3 gap-8">
+            <motion.div 
+              whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
+              className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
+            >
+              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+                <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Permanent Storage</h3>
+              <p className="text-[var(--text-secondary)]">
+                Files stored on Shelby Protocol, distributed across thousands of nodes.
+                No single point of failure.
+              </p>
+            </motion.div>
 
-      {/* Content Types Section */}
-      <section className="py-32 relative overflow-hidden bg-white dark:bg-[#0b0e14] transition-colors duration-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <AnimatedSection className="text-center mb-16">
-            <h2 className="text-4xl font-bold mb-4">Support All Content Types</h2>
-            <p className="text-xl text-gray-500 max-w-2xl mx-auto">Upload, share, and monetize anything.</p>
-          </AnimatedSection>
+            <motion.div 
+              whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
+              className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
+            >
+              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+                <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Instant Earnings</h3>
+              <p className="text-[var(--text-secondary)]">
+                90% of every sale goes directly to your wallet. No holding periods,
+                no withdrawal requests.
+              </p>
+            </motion.div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 lg:gap-8">
-            {[ 
-              { icon: Music, label: 'Music', color: 'text-blue-500' },
-              { icon: ImageIcon, label: 'Photos', color: 'text-sky-500' },
-              { icon: Video, label: 'Video', color: 'text-indigo-500' },
-              { icon: FileText, label: 'Documents', color: 'text-cyan-500' }
-            ].map((type, i) => {
-              const Icon = type.icon;
-              return (
-                <AnimatedSection key={i} delay={i * 0.1}>
-                  <div className="group bg-gray-50 dark:bg-white/5 border border-transparent dark:hover:border-white/10 hover:bg-gray-100 rounded-3xl p-10 text-center transition-all duration-300 hover:-translate-y-2 cursor-pointer">
-                    <Icon className={`w-12 h-12 mx-auto mb-6 ${type.color} group-hover:scale-110 transition-transform duration-300`} />
-                    <h4 className="font-bold text-xl">{type.label}</h4>
-                  </div>
-                </AnimatedSection>
-              );
-            })}
+            <motion.div 
+              whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
+              className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
+            >
+              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+                <Globe className="w-6 h-6 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Uncensorable</h3>
+              <p className="text-[var(--text-secondary)]">
+                Content hash-committed on Aptos blockchain. No platform can take
+                down your work or freeze your earnings.
+              </p>
+            </motion.div>
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-32 relative">
-        <div className="absolute inset-0 bg-blue-50 dark:bg-blue-900/10 transition-colors duration-500" />
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <AnimatedSection>
-            <h2 className="text-5xl font-bold mb-6">Ready to get started?</h2>
-            <p className="text-xl text-gray-600 dark:text-gray-400 mb-12">
-              Join thousands of creators and users already using Verixa for
-              decentralized storage and monetization.
-            </p>
-            <Link
-              href="/vault"
-              className="px-10 py-5 bg-blue-500 text-white rounded-2xl font-bold text-xl hover:bg-blue-600 transition-all hover:scale-105 hover:shadow-[0_0_40px_rgba(59,130,246,0.4)] inline-flex items-center gap-3"
+      {/* Content Types */}
+      <section className="py-20 bg-[var(--bg-secondary)] transition-colors duration-500">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-center mb-12 text-[var(--text-primary)]">Support All Content Types</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <motion.div whileHover={{ scale: 1.05 }} className="card p-6 text-center bg-[var(--surface)] border-[var(--border)]">
+              <Music className="w-8 h-8 mx-auto mb-3 text-blue-600 dark:text-blue-400" />
+              <h4 className="font-medium text-[var(--text-primary)]">Music</h4>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} className="card p-6 text-center bg-[var(--surface)] border-[var(--border)]">
+              <ImageIcon className="w-8 h-8 mx-auto mb-3 text-purple-600 dark:text-purple-400" />
+              <h4 className="font-medium text-[var(--text-primary)]">Photos</h4>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} className="card p-6 text-center bg-[var(--surface)] border-[var(--border)]">
+              <Video className="w-8 h-8 mx-auto mb-3 text-red-600 dark:text-red-400" />
+              <h4 className="font-medium text-[var(--text-primary)]">Video</h4>
+            </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} className="card p-6 text-center bg-[var(--surface)] border-[var(--border)]">
+              <FileText className="w-8 h-8 mx-auto mb-3 text-green-600 dark:text-green-400" />
+              <h4 className="font-medium text-[var(--text-primary)]">Documents</h4>
+            </motion.div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="py-20">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <h2 className="text-3xl font-bold mb-4 text-[var(--text-primary)]">Ready to get started?</h2>
+          <p className="text-[var(--text-secondary)] mb-8">
+            Join thousands of creators and users already using Verixa for
+            decentralized storage and monetization.
+          </p>
+          <Link href="/vault">
+            <motion.div
+              whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(37, 99, 235, 0.3)" }}
+              whileTap={{ scale: 0.95 }}
+              className="px-8 py-4 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors inline-flex items-center gap-2 group cursor-pointer"
             >
-              Launch App <ArrowRight className="w-6 h-6" />
-            </Link>
-          </AnimatedSection>
+              Launch App <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </motion.div>
+          </Link>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-white dark:bg-[#0b0e14] border-t border-gray-100 dark:border-white/10 py-16 transition-colors duration-500">
+      <footer className="bg-gray-900 dark:bg-black text-white py-12 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-blue-500 rounded-lg" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg" />
               <span className="text-xl font-bold">Verixa</span>
             </div>
-            <p className="text-gray-500 text-sm font-medium">
+            <p className="text-gray-400 text-sm">
               Built on Aptos & Shelby Protocol
             </p>
           </div>

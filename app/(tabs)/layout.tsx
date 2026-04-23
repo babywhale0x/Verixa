@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Home, Compass, Lock, PlusCircle, User, Sun, Moon } from 'lucide-react';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
-import { useEffect, useState } from 'react';
-import { getTheme, toggleTheme, applyTheme, type Theme } from '@/lib/theme';
+import { ThemeToggle } from '@/components/theme/ThemeToggle';
 
 const tabs = [
   { name: 'Home',    href: '/home',    icon: Home },
@@ -17,19 +16,7 @@ const tabs = [
 
 export default function TabsLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [theme, setTheme] = useState<Theme>('light');
-
-  // Initialise theme on mount
-  useEffect(() => {
-    const saved = getTheme();
-    applyTheme(saved);
-    setTheme(saved);
-  }, []);
-
-  const handleToggleTheme = () => {
-    const next = toggleTheme();
-    setTheme(next);
-  };
+  // Theme is fully managed by next-themes via root layout
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--bg)' }}>
@@ -81,18 +68,7 @@ export default function TabsLayout({ children }: { children: React.ReactNode }) 
 
             {/* Right: Theme Toggle + Connect */}
             <div className="flex items-center gap-2">
-              <button
-                onClick={handleToggleTheme}
-                className="w-9 h-9 rounded-xl flex items-center justify-center transition-all"
-                style={{
-                  background: 'var(--bg-secondary)',
-                  color: 'var(--text-secondary)',
-                  border: '1px solid var(--border)',
-                }}
-                title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-              >
-                {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
+              <ThemeToggle />
               <ConnectButton />
             </div>
           </div>
