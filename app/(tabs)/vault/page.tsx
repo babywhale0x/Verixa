@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useDropzone } from 'react-dropzone';
-import { Upload, File, Image, Video, Music, FileText, Trash2, Download, Lock, Globe, Loader2, ArrowLeft } from 'lucide-react';
+import { Upload, File, Image as ImageIcon, Video, Music, FileText, Trash2, Download, Lock, Globe, Loader2, ArrowLeft, Eye, Folder as FolderIcon, X } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
 import { FiatOnramp } from '@/components/wallet/FiatOnramp';
 import toast from 'react-hot-toast';
@@ -36,6 +36,48 @@ export default function VaultPage() {
   const [stagedDescription, setStagedDescription] = useState('');
   const [showFundModal, setShowFundModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [currentFolder, setCurrentFolder] = useState<{name: string, files: StoredFile[]} | null>(null);
+  const [previewFile, setPreviewFile] = useState<StoredFile | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewLoading, setIsPreviewLoading] = useState(false);
+
+
+  
+  const groupedItems = useMemo(() => {
+    const groups: Record<string, StoredFile[]> = {};
+    const singles: StoredFile[] = [];
+
+    files.forEach(f => {
+      const match = f.name.match(/^(.*?) (\d+)(\.[^.]+)?$/);
+      if (match) {
+        const base = match[1];
+        if (!groups[base]) groups[base] = [];
+        groups[base].push(f);
+      } else {
+        singles.push(f);
+      }
+    });
+
+    const result: any[] = [...singles];
+    
+    Object.entries(groups).forEach(([base, gFiles]) => {
+      if (gFiles.length === 1) {
+        result.push(gFiles[0]);
+      } else {
+        result.push({
+          isFolder: true,
+          name: base,
+          id: `folder-${base}`,
+          files: gFiles.sort((a, b) => a.name.localeCompare(b.name)),
+          size: gFiles.reduce((acc, current) => acc + BigInt(current.size), BigInt(0)),
+          createdAt: gFiles[gFiles.length - 1].createdAt,
+          storageFee: gFiles.reduce((acc, current) => acc + (current.storageFee || 0), 0)
+        });
+      }
+    });
+
+    return result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }, [files]);
 
   // Fetch user's files and storage stats
   useEffect(() => {
@@ -232,6 +274,39 @@ export default function VaultPage() {
     }
   };
 
+  
+  const handlePreview = async (file: StoredFile) => {
+    setPreviewFile(file);
+    setIsPreviewLoading(true);
+    setPreviewUrl(null);
+    try {
+      const response = await fetch(`/api/download/${file.blobId}?wallet=${account?.address?.toString() || ''}`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        setPreviewUrl(url);
+      } else {
+         const { default: toast } = await import('react-hot-toast');
+         toast.error('Failed to load preview');
+         setPreviewFile(null);
+      }
+    } catch (error) {
+      const { default: toast } = await import('react-hot-toast');
+      toast.error('Failed to load preview');
+      setPreviewFile(null);
+    } finally {
+      setIsPreviewLoading(false);
+    }
+  };
+
+  const closePreview = () => {
+    if (previewUrl) {
+      window.URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewFile(null);
+    setPreviewUrl(null);
+  };
+
   const handleDownload = async (blobId: string, name: string) => {
     try {
       const response = await fetch(`/api/download/${blobId}?wallet=${account?.address?.toString() || ''}`);
@@ -259,7 +334,7 @@ export default function VaultPage() {
   };
 
   const getFileIcon = (contentType: string) => {
-    if (contentType.startsWith('image/')) return <Image className="w-5 h-5" />;
+    if (contentType.startsWith('image/')) return <ImageIcon className="w-5 h-5" />;
     if (contentType.startsWith('video/')) return <Video className="w-5 h-5" />;
     if (contentType.startsWith('audio/')) return <Music className="w-5 h-5" />;
     return <FileText className="w-5 h-5" />;
@@ -466,14 +541,27 @@ export default function VaultPage() {
           <div className="text-center py-12">
             <Loader2 className="w-8 h-8 animate-spin mx-auto" />
           </div>
-        ) : files.length === 0 ? (
+        ) : groupedItems.length === 0 ? (
           <div className="text-center py-12 text-gray-500">
             <File className="w-16 h-16 mx-auto mb-4" />
             <p>No files yet. Upload your first file above.</p>
           </div>
         ) : (
           <div className="card overflow-hidden">
-            <table className="w-full">
+            
+              {currentFolder && (
+                 <div className="flex items-center gap-2 mb-4 p-4 bg-white rounded-lg border border-gray-200">
+                    <button onClick={() => setCurrentFolder(null)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                      <ArrowLeft className="w-4 h-4" /> Back to Vault
+                    </button>
+                    <span className="font-semibold text-gray-700 flex items-center gap-2">
+                      <FolderIcon className="w-5 h-5 text-blue-400" />
+                      {currentFolder.name}
+                    </span>
+                 </div>
+              )}
+
+<table className="w-full">
               <thead className="bg-gray-50 border-b border-gray-200">
                 <tr>
                   <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">File</th>
@@ -485,9 +573,46 @@ export default function VaultPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {files.map((file) => (
-                  <tr key={file.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                {(currentFolder ? currentFolder.files : groupedItems).map((item) => {
+                  if (item.isFolder) {
+                    return (
+                      <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setCurrentFolder(item)}>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <FolderIcon className="w-5 h-5 text-blue-500 fill-blue-100" />
+                            <span className="font-medium">{item.name}</span>
+                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{item.files.length} files</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          {formatFileSize(item.size)}
+                        </td>
+                        <td className="px-6 py-4 text-sm font-medium text-green-600">
+                          {item.storageFee != null ? item.storageFee.toFixed(4) : '—'} SUSD
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600">
+                          Folder
+                        </td>
+                        <td className="px-6 py-4">
+                           <span className="text-sm text-gray-500">—</span>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setCurrentFolder(item); }}
+                            className="p-2 hover:bg-gray-100 rounded-lg text-blue-600 font-medium text-sm"
+                          >
+                            Open Folder
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }
+                  
+                  const file = item as StoredFile;
+                  return (
+                    <tr key={file.id} className="hover:bg-gray-50">
+
+<td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         {getFileIcon(file.contentType)}
                         <span className="font-medium">{file.name}</span>
@@ -519,14 +644,21 @@ export default function VaultPage() {
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleDownload(file.blobId, file.name)}
+                          onClick={(e) => { e.stopPropagation(); handlePreview(file); }}
+                          className="p-2 hover:bg-gray-100 rounded-lg text-blue-600"
+                          title="Preview"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); handleDownload(file.blobId, file.name); }}
                           className="p-2 hover:bg-gray-100 rounded-lg"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => handleDelete(file.blobId)}
+                          onClick={(e) => { e.stopPropagation(); handleDelete(file.blobId); }}
                           className="p-2 hover:bg-red-50 text-red-600 rounded-lg"
                           title="Delete"
                         >
@@ -535,7 +667,8 @@ export default function VaultPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -552,6 +685,50 @@ export default function VaultPage() {
           toast.success('Wallet funded successfully!');
         }}
       />
-    </div>
+    
+      {/* Preview Modal */}
+      {previewFile && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+              <div className="flex items-center gap-3">
+                {getFileIcon(previewFile.contentType)}
+                <h3 className="font-semibold text-lg">{previewFile.name}</h3>
+              </div>
+              <button onClick={closePreview} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center p-4 min-h-[300px]">
+              {isPreviewLoading ? (
+                <div className="flex flex-col items-center text-gray-500">
+                   <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+                   <p>Decrypting and loading preview...</p>
+                </div>
+              ) : previewUrl ? (
+                previewFile.contentType.startsWith('image/') ? (
+                  <img src={previewUrl} alt={previewFile.name} className="max-w-full max-h-full object-contain rounded-lg shadow-sm" />
+                ) : previewFile.contentType.startsWith('video/') ? (
+                  <video src={previewUrl} controls autoPlay className="max-w-full max-h-full rounded-lg shadow-sm" />
+                ) : previewFile.contentType.startsWith('audio/') ? (
+                  <audio src={previewUrl} controls className="w-full max-w-md" />
+                ) : (
+                  <div className="text-center">
+                    <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">Preview not available for this file type.</p>
+                    <button onClick={() => handleDownload(previewFile.blobId, previewFile.name)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                       <Download className="w-4 h-4 inline mr-2" /> Download to View
+                    </button>
+                  </div>
+                )
+              ) : (
+                <div className="text-gray-500">Failed to load preview.</div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+</div>
   );
 }
