@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { Search, Music, Image, Video, FileText, Loader2, Heart, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
 import { formatApt } from '@/lib/aptos';
+import { FeaturedSlideshow } from '@/components/FeaturedSlideshow';
 
 interface Content {
   contentId: string;
@@ -376,6 +377,7 @@ export default function ExplorePage() {
       )}
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
         <div className="flex gap-7">
 
           {/* Desktop Sidebar */}
@@ -393,6 +395,9 @@ export default function ExplorePage() {
 
           {/* Grid */}
           <div className="flex-1 min-w-0">
+            {!isLoading && !searchQuery && activeFiltersCount === 0 && contents.length > 0 && (
+              <FeaturedSlideshow items={contents.slice(0, 5)} />
+            )}
             <div className="flex items-center justify-between mb-5">
               <p className="text-sm" style={{ color: 'var(--text-secondary)' }}>
                 {isLoading ? 'Loading…' : `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`}
