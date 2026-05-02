@@ -266,7 +266,7 @@ export default function ContentDetailPage() {
             <div className="card p-6">
               <h3 className="font-semibold mb-4">About the Creator</h3>
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full" />
+                <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-sky-400 rounded-full" />
                 <div>
                   <p className="font-medium">{formatAddress(content.creator)}</p>
                   <p className="text-sm text-gray-500">Creator</p>

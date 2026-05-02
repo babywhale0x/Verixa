@@ -14,7 +14,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg" />
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-700 to-blue-500 rounded-lg" />
               <span className="text-xl font-bold">Verixa</span>
             </div>
             <nav className="hidden md:flex items-center gap-8">
@@ -185,7 +185,7 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg" />
+              <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg" />
               <span className="text-xl font-bold">Verixa</span>
             </div>
             <p className="text-gray-400 text-sm">

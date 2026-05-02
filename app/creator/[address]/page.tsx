@@ -135,8 +135,8 @@ export default function CreatorProfilePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white text-3xl font-bold">
-                {creatorAddress.slice(2, 4).toUpperCase()}
+              <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-sky-400 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-gray-900 shadow-xl">
+                {creatorAddress.slice(0, 2).toUpperCase()}
               </div>
               <div>
                 <h1 className="text-3xl font-bold mb-2">

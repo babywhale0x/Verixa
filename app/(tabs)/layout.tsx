@@ -29,14 +29,14 @@ export default function TabsLayout({ children }: { children: React.ReactNode }) 
           boxShadow: 'var(--shadow-sm)',
         }}
       >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1440px] mx-auto px-6 sm:px-8 lg:px-12">
           <div className="flex items-center justify-between h-16">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 shrink-0">
               <div
                 className="w-8 h-8 rounded-xl flex items-center justify-center text-white text-sm font-black"
-                style={{ background: 'linear-gradient(135deg, #6366f1, #a855f7)' }}
+                style={{ background: 'linear-gradient(135deg, #2563eb, #3b82f6)' }}
               >
                 V
               </div>

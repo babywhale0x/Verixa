@@ -204,7 +204,7 @@ export default function ProfilePage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="text-center card p-10 max-w-sm w-full mx-4 glow">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center mx-auto mb-6">
             <User className="w-8 h-8 text-white" />
           </div>
           <h2 className="text-2xl font-bold mb-3">Your Profile</h2>
