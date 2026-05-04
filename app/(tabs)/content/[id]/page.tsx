@@ -147,7 +147,7 @@ export default function ContentDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
@@ -155,10 +155,10 @@ export default function ContentDetailPage() {
 
   if (!content) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold mb-2">Content Not Found</h2>
-          <p className="text-gray-600">The content you're looking for doesn't exist.</p>
+          <p className="text-secondary">The content you're looking for doesn't exist.</p>
         </div>
       </div>
     );
@@ -170,7 +170,7 @@ export default function ContentDetailPage() {
   const commercialPrice = Number(content.commercialPrice);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-secondary">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Left: Preview */}
@@ -208,7 +208,7 @@ export default function ContentDetailPage() {
                 {/* Lock overlay for non-purchasers */}
                 {!hasAccess && (
                   <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center gap-2 backdrop-blur-sm">
-                    <div className="bg-white/10 border border-white/20 rounded-2xl px-6 py-4 text-center">
+                    <div className="bg-surface/10 border border-white/20 rounded-2xl px-6 py-4 text-center">
                       <Lock className="w-8 h-8 text-white mx-auto mb-2" />
                       <p className="text-white font-semibold text-sm">Purchase to unlock full content</p>
                       {content.previewUrl && (
@@ -225,14 +225,14 @@ export default function ContentDetailPage() {
               <div className="flex items-start justify-between mb-4">
                 <div>
                   <h1 className="text-3xl font-bold mb-2">{content.title}</h1>
-                  <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <div className="flex items-center gap-4 text-sm text-secondary">
                     <span>By {formatAddress(content.creator)}</span>
                     <span>•</span>
                     <span>{formatDate(content.uploadTimestamp)}</span>
                   </div>
                 </div>
                 <div className="flex gap-2">
-                  <button className="p-2 hover:bg-gray-100 rounded-lg">
+                  <button className="p-2 hover:bg-secondary rounded-lg">
                     <Heart className="w-5 h-5" />
                   </button>
                   <button 
@@ -240,7 +240,7 @@ export default function ContentDetailPage() {
                       navigator.clipboard.writeText(window.location.href);
                       toast.success('Link copied to clipboard!');
                     }}
-                    className="p-2 hover:bg-gray-100 rounded-lg"
+                    className="p-2 hover:bg-secondary rounded-lg"
                     title="Share this content"
                   >
                     <Share2 className="w-5 h-5" />
@@ -248,13 +248,13 @@ export default function ContentDetailPage() {
                 </div>
               </div>
 
-              <p className="text-gray-700 mb-4">{content.description}</p>
+              <p className="text-primary mb-4">{content.description}</p>
 
               <div className="flex flex-wrap gap-2">
                 {content.tags.map((tag) => (
                   <span
                     key={tag}
-                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-sm"
+                    className="px-3 py-1 bg-gray-100 text-secondary rounded-full text-sm"
                   >
                     #{tag}
                   </span>
@@ -269,7 +269,7 @@ export default function ContentDetailPage() {
                 <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-sky-400 rounded-full" />
                 <div>
                   <p className="font-medium">{formatAddress(content.creator)}</p>
-                  <p className="text-sm text-gray-500">Creator</p>
+                  <p className="text-sm text-secondary">Creator</p>
                 </div>
               </div>
             </div>
@@ -331,14 +331,14 @@ export default function ContentDetailPage() {
                     <button
                       onClick={() => handlePurchase(1)}
                       disabled={isPurchasing}
-                      className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 transition-colors text-left"
+                      className="w-full p-4 border-2 border-theme rounded-lg hover:border-blue-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Eye className="w-5 h-5 text-blue-500" />
                           <div>
                             <p className="font-medium">Stream (In-App)</p>
-                            <p className="text-sm text-gray-500">Full access in-app, no download</p>
+                            <p className="text-sm text-secondary">Full access in-app, no download</p>
                           </div>
                         </div>
                         <span className="font-semibold">
@@ -357,14 +357,14 @@ export default function ContentDetailPage() {
                     <button
                       onClick={() => handlePurchase(2)}
                       disabled={isPurchasing}
-                      className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-purple-500 transition-colors text-left"
+                      className="w-full p-4 border-2 border-theme rounded-lg hover:border-purple-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <FileText className="w-5 h-5 text-purple-500" />
                           <div>
                             <p className="font-medium">Cite</p>
-                            <p className="text-sm text-gray-500">On-chain citation certificate + access</p>
+                            <p className="text-sm text-secondary">On-chain citation certificate + access</p>
                           </div>
                         </div>
                         <span className="font-semibold">
@@ -383,14 +383,14 @@ export default function ContentDetailPage() {
                     <button
                       onClick={() => handlePurchase(3)}
                       disabled={isPurchasing}
-                      className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-green-500 transition-colors text-left"
+                      className="w-full p-4 border-2 border-theme rounded-lg hover:border-green-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Download className="w-5 h-5 text-green-500" />
                           <div>
                             <p className="font-medium">License</p>
-                            <p className="text-sm text-gray-500">Download + private use rights + certificate</p>
+                            <p className="text-sm text-secondary">Download + private use rights + certificate</p>
                           </div>
                         </div>
                         <span className="font-semibold">
@@ -409,14 +409,14 @@ export default function ContentDetailPage() {
                     <button
                       onClick={() => handlePurchase(4)}
                       disabled={isPurchasing}
-                      className="w-full p-4 border-2 border-gray-200 rounded-lg hover:border-yellow-500 transition-colors text-left"
+                      className="w-full p-4 border-2 border-theme rounded-lg hover:border-yellow-500 transition-colors text-left"
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <Crown className="w-5 h-5 text-yellow-500" />
                           <div>
                             <p className="font-medium">Commercial</p>
-                            <p className="text-sm text-gray-500">Download + full commercial rights + certificate</p>
+                            <p className="text-sm text-secondary">Download + full commercial rights + certificate</p>
                           </div>
                         </div>
                         <span className="font-semibold">
@@ -430,7 +430,7 @@ export default function ContentDetailPage() {
                     </button>
                   )}
 
-                  <p className="text-sm text-gray-500 text-center mt-4">
+                  <p className="text-sm text-secondary text-center mt-4">
                     90% goes to creator • 10% platform fee
                   </p>
                 </div>

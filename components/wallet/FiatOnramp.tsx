@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useState } from 'react';
@@ -31,29 +31,29 @@ export function FiatOnramp({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl max-w-md w-full p-6">
+      <div className="bg-surface border border-theme rounded-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-semibold">Fund Your Wallet</h3>
-          <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
+          <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
         <div className="space-y-4">
-          <p className="text-gray-600">
+          <p className="text-secondary">
             Send APT to your wallet address to fund your account.
           </p>
-          <div className="p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-500 mb-2">Your Wallet Address</p>
+          <div className="p-4 bg-secondary rounded-lg">
+            <p className="text-xs text-secondary mb-2">Your Wallet Address</p>
             <div className="flex items-center gap-2">
               <p className="text-sm font-mono break-all flex-1">{address}</p>
               <button
                 onClick={copyAddress}
-                className="p-2 hover:bg-gray-200 rounded shrink-0"
+                className="p-2 hover:opacity-80 rounded shrink-0"
               >
                 {copied ? (
                   <CheckCircle className="w-4 h-4 text-green-500" />
                 ) : (
-                  <Copy className="w-4 h-4 text-gray-500" />
+                  <Copy className="w-4 h-4 text-secondary" />
                 )}
               </button>
             </div>
@@ -68,7 +68,7 @@ export function FiatOnramp({
           </a>
           <button
             onClick={onClose}
-            className="w-full py-3 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="w-full py-3 border border-theme rounded-lg hover:bg-secondary"
           >
             Close
           </button>

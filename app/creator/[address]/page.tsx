@@ -122,16 +122,16 @@ export default function CreatorProfilePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-secondary">
       {/* Profile Header */}
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-surface border-b border-theme">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
@@ -142,7 +142,7 @@ export default function CreatorProfilePage() {
                 <h1 className="text-3xl font-bold mb-2">
                   Creator {formatAddress(creatorAddress)}
                 </h1>
-                <div className="flex items-center gap-6 text-gray-600">
+                <div className="flex items-center gap-6 text-secondary">
                   <span className="flex items-center gap-2">
                     <Image className="w-4 h-4" />
                     {creator?.totalContents.toString()} works
@@ -184,18 +184,18 @@ export default function CreatorProfilePage() {
 
           {/* Stats */}
           <div className="grid grid-cols-3 gap-6 mt-8">
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Total Sales</p>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-sm text-secondary mb-1">Total Sales</p>
               <p className="text-2xl font-bold">{creator?.totalSales.toString()}</p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Total Earnings</p>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-sm text-secondary mb-1">Total Earnings</p>
               <p className="text-2xl font-bold">
                 {creator ? formatApt(Number(creator.totalEarnings)) : '0 APT'}
               </p>
             </div>
-            <div className="p-4 bg-gray-50 rounded-lg">
-              <p className="text-sm text-gray-600 mb-1">Content Items</p>
+            <div className="p-4 bg-secondary rounded-lg">
+              <p className="text-sm text-secondary mb-1">Content Items</p>
               <p className="text-2xl font-bold">{creator?.totalContents.toString()}</p>
             </div>
           </div>
@@ -207,7 +207,7 @@ export default function CreatorProfilePage() {
         <h2 className="text-xl font-semibold mb-6">Published Works</h2>
 
         {contents.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-secondary">
             <p>No content published yet</p>
           </div>
         ) : (
@@ -224,7 +224,7 @@ export default function CreatorProfilePage() {
                 <div className="p-4">
                   <h3 className="font-semibold mb-2">{content.title}</h3>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm text-gray-500">
+                    <span className="text-sm text-secondary">
                       {content.contentType.split('/')[1].toUpperCase()}
                     </span>
                     <span className="font-semibold text-blue-600">

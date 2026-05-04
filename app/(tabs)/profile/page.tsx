@@ -281,7 +281,7 @@ export default function ProfilePage() {
 
         {/* Creator Stats */}
         {[
-          { label: 'Items Listed', value: stats.listed, icon: Package, color: 'text-blue-500', bg: 'bg-blue-50 flex items-center justify-center rounded-lg w-10 h-10' },
+          { label: 'Items Listed', value: stats.listed, icon: Package, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center rounded-lg w-10 h-10' },
           { label: 'Items Sold', value: stats.sold, icon: Tag, color: 'text-purple-500', bg: 'bg-purple-50 flex items-center justify-center rounded-lg w-10 h-10' },
           { label: 'Total Earned', value: `${(stats.earned/1e8).toFixed(2)} APT`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-50 flex items-center justify-center rounded-lg w-10 h-10' },
           { label: 'Items Bought', value: stats.purchased, icon: Download, color: 'text-orange-500', bg: 'bg-orange-50 flex items-center justify-center rounded-lg w-10 h-10' },
@@ -433,7 +433,7 @@ export default function ProfilePage() {
                           disabled={togglingFileId === file.id}
                           className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5
                             ${file.isPublished 
-                              ? 'bg-red-50 text-red-600 hover:bg-red-100' 
+                              ? 'bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100' 
                               : 'bg-accent/10 text-accent hover:bg-accent/20'}`}
                         >
                           {togglingFileId === file.id ? <Loader2 className="w-4 h-4 animate-spin" /> : 

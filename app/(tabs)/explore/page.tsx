@@ -296,7 +296,7 @@ export default function ExplorePage() {
       {activeFiltersCount > 0 && (
         <button
           onClick={() => { setSelectedTypes([]); setSelectedCategories([]); setMinPrice(''); setMaxPrice(''); }}
-          className="w-full py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 transition-all"
+          className="w-full py-2 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20 transition-all"
           style={{ border: '1px solid #fecaca' }}
         >
           Clear all filters ({activeFiltersCount})
@@ -308,7 +308,7 @@ export default function ExplorePage() {
   return (
     <div style={{ background: 'var(--bg)', minHeight: '100vh' }}>
       {/* Search header */}
-      <div className="sticky top-16 z-30" style={{ background: 'var(--surface)', borderBottom: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
+      <div className="sticky top-16 z-30" style={{ background: 'var(--bg)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex gap-3 items-center">
             {/* Search */}

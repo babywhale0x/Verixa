@@ -10,7 +10,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] transition-colors duration-500">
       {/* Header */}
-      <header className="bg-[var(--surface)] border-b border-[var(--border)] transition-colors duration-500">
+      <header className="bg-[var(--bg)] transition-colors duration-500 py-2">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export default function HomePage() {
       </header>
 
       {/* Hero */}
-      <section className="bg-gradient-to-b from-blue-50 to-[var(--bg)] dark:from-blue-900/10 dark:to-[var(--bg)] py-20 transition-colors duration-500">
+      <section className="bg-gradient-to-b from-blue-50 to-[var(--bg)] dark:from-[var(--bg)] dark:to-[var(--bg)] py-20 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h1 className="text-5xl md:text-6xl font-bold mb-6 text-[var(--text-primary)] leading-tight">
             <MatrixText text="Your Files." delay={0.1} />
@@ -88,7 +88,7 @@ export default function HomePage() {
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+              <div className="w-12 h-12 bg-blue-100 dark:bg-white/5 rounded-lg flex items-center justify-center mb-4 transition-colors">
                 <Shield className="w-6 h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Permanent Storage</h3>
@@ -105,7 +105,7 @@ export default function HomePage() {
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
-              <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+              <div className="w-12 h-12 bg-purple-100 dark:bg-white/5 rounded-lg flex items-center justify-center mb-4 transition-colors">
                 <Zap className="w-6 h-6 text-purple-600 dark:text-purple-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Instant Earnings</h3>
@@ -122,7 +122,7 @@ export default function HomePage() {
               whileHover={{ y: -10, boxShadow: "0 20px 40px -5px rgba(0,0,0,0.1)" }}
               className="card p-8 transition-shadow bg-[var(--surface)] border-[var(--border)]"
             >
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center mb-4 transition-colors">
+              <div className="w-12 h-12 bg-green-100 dark:bg-white/5 rounded-lg flex items-center justify-center mb-4 transition-colors">
                 <Globe className="w-6 h-6 text-green-600 dark:text-green-400" />
               </div>
               <h3 className="text-xl font-semibold mb-2 text-[var(--text-primary)]">Uncensorable</h3>
@@ -136,7 +136,7 @@ export default function HomePage() {
       </section>
 
       {/* Content Types */}
-      <section className="py-20 bg-[var(--bg-secondary)] transition-colors duration-500">
+      <section className="py-20 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h2 className="text-3xl font-bold text-center mb-12 text-[var(--text-primary)]">Support All Content Types</h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
@@ -181,14 +181,14 @@ export default function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-gray-900 dark:bg-black text-white py-12 transition-colors duration-500">
+      <footer className="bg-[var(--bg)] py-12 transition-colors duration-500">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-blue-400 rounded-lg" />
               <span className="text-xl font-bold">Verixa</span>
             </div>
-            <p className="text-gray-400 text-sm">
+            <p className="text-[var(--text-muted)] text-sm">
               Built on Aptos & Shelby Protocol
             </p>
           </div>

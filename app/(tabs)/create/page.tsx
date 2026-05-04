@@ -37,7 +37,7 @@ const getFileTypeIcon = (type: string, size = 'md') => {
   if (type.startsWith('image/')) return <Image className={`${cls} text-blue-500`} />;
   if (type.startsWith('video/')) return <Video className={`${cls} text-red-500`} />;
   if (type.startsWith('audio/')) return <Music className={`${cls} text-purple-500`} />;
-  return <FileText className={`${cls} text-gray-500`} />;
+  return <FileText className={`${cls} text-secondary`} />;
 };
 
 export default function CreatePage() {
@@ -413,19 +413,19 @@ export default function CreatePage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="text-center">
-          <Upload className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <Upload className="w-16 h-16 mx-auto text-muted mb-4" />
           <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-gray-600">Connect your wallet to publish content</p>
+          <p className="text-secondary">Connect your wallet to publish content</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-200">
+    <div className="min-h-screen bg-secondary">
+      <header className="bg-surface border-b border-theme">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <h1 className="text-xl font-bold">Create Content</h1>
@@ -440,15 +440,15 @@ export default function CreatePage() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-2xl p-16 text-center cursor-pointer transition-colors mb-8 ${
-              isDragActive ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'
+              isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-theme hover:border-gray-400'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className="w-14 h-14 mx-auto text-gray-400 mb-4" />
-            <p className="text-xl font-semibold text-gray-700">
+            <Upload className="w-14 h-14 mx-auto text-muted mb-4" />
+            <p className="text-xl font-semibold text-primary">
               {isDragActive ? 'Drop files here' : 'Drag & drop your files here'}
             </p>
-            <p className="text-xs text-gray-400 mt-1">Max 500 MB per file • Multiple files supported</p>
+            <p className="text-xs text-muted mt-1">Max 500 MB per file • Multiple files supported</p>
           </div>
         )}
 
@@ -460,7 +460,7 @@ export default function CreatePage() {
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {recentCreations.map((file) => (
-                <div key={file.id} className="card overflow-hidden hover-lift flex flex-col border border-gray-200">
+                <div key={file.id} className="card overflow-hidden hover-lift flex flex-col border border-theme">
                   <div className="h-28 relative bg-gray-100 flex items-center justify-center">
                     {file.previewUrl ? (
                       file.contentType.startsWith('image/')
@@ -468,9 +468,9 @@ export default function CreatePage() {
                         : getFileTypeIcon(file.contentType, 'sm')
                     ) : getFileTypeIcon(file.contentType, 'sm')}
                   </div>
-                  <div className="p-3 bg-white flex-1">
+                  <div className="p-3 bg-surface flex-1">
                     <h4 className="font-semibold text-sm truncate mb-1">{file.name}</h4>
-                    <p className="text-xs text-gray-500">{new Date(file.createdAt).toLocaleDateString()}</p>
+                    <p className="text-xs text-secondary">{new Date(file.createdAt).toLocaleDateString()}</p>
                   </div>
                 </div>
               ))}
@@ -493,7 +493,7 @@ export default function CreatePage() {
                   </h2>
                   <button
                     onClick={resetAll}
-                    className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                    className="flex items-center gap-1 text-sm text-secondary hover:text-primary"
                   >
                     <ArrowLeft className="w-4 h-4" /> Change files
                   </button>
@@ -505,16 +505,16 @@ export default function CreatePage() {
                       ? (stagedFiles.length === 1 ? baseTitle : `${baseTitle} ${i + 1}`)
                       : null;
                     return (
-                      <div key={i} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <div key={i} className="flex items-center gap-3 p-3 bg-secondary rounded-lg">
                         {getFileTypeIcon(f.type, 'sm')}
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">
-                            {finalName ?? <span className="text-gray-400 italic">Awaiting title…</span>}
+                            {finalName ?? <span className="text-muted italic">Awaiting title…</span>}
                           </p>
-                          <p className="text-xs text-gray-400">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
+                          <p className="text-xs text-muted">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
                         </div>
                         {generatedPreviews[i] && (
-                          <img src={generatedPreviews[i]} alt="preview" className="w-10 h-10 rounded object-cover border border-gray-200" />
+                          <img src={generatedPreviews[i]} alt="preview" className="w-10 h-10 rounded object-cover border border-theme" />
                         )}
                       </div>
                     );
@@ -524,10 +524,10 @@ export default function CreatePage() {
                 {/* Drop more files */}
                 <div
                   {...getRootProps()}
-                  className="mt-3 border border-dashed border-gray-300 rounded-xl p-3 text-center cursor-pointer hover:border-gray-400 transition-colors"
+                  className="mt-3 border border-dashed border-theme rounded-xl p-3 text-center cursor-pointer hover:border-gray-400 transition-colors"
                 >
                   <input {...getInputProps()} />
-                  <p className="text-xs text-gray-500">{isDragActive ? 'Drop here' : '+ Add more files'}</p>
+                  <p className="text-xs text-secondary">{isDragActive ? 'Drop here' : '+ Add more files'}</p>
                 </div>
               </div>
 
@@ -536,7 +536,7 @@ export default function CreatePage() {
                 <h2 className="text-lg font-semibold mb-4">Content Details</h2>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                    <label className="block text-sm font-medium text-primary mb-1">
                       {stagedFiles.length === 1 ? 'Title *' : 'Base Title *'}
                     </label>
                     <input
@@ -547,13 +547,13 @@ export default function CreatePage() {
                       placeholder={stagedFiles.length === 1 ? 'Enter content title' : 'e.g. "Summer Collection" → Summer Collection 1, 2, 3…'}
                     />
                     {stagedFiles.length > 1 && (
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-secondary mt-1">
                         Files will be published as <strong>{baseTitle || 'Title'} 1</strong>, <strong>{baseTitle || 'Title'} 2</strong>…
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                    <label className="block text-sm font-medium text-primary mb-1">Description</label>
                     <textarea
                       value={description}
                       onChange={e => setDescription(e.target.value)}
@@ -563,9 +563,9 @@ export default function CreatePage() {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Tags (comma separated)</label>
+                    <label className="block text-sm font-medium text-primary mb-1">Tags (comma separated)</label>
                     <div className="relative">
-                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
                       <input
                         type="text"
                         value={tags}
@@ -580,7 +580,7 @@ export default function CreatePage() {
 
               {/* Image preview mode — only when at least one image is staged */}
               {stagedFiles.some(f => f.type.startsWith('image/')) && (
-                <div className="card p-6 border border-blue-200 bg-blue-50">
+                <div className="card p-6 border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/20">
                   <div className="flex items-center justify-between mb-3">
                     <p className="text-sm font-semibold text-blue-800">Buyer Preview Style</p>
                     <div className="flex gap-2">
@@ -589,7 +589,7 @@ export default function CreatePage() {
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                           imagePreviewMode === 'blur'
                             ? 'bg-blue-600 text-white shadow'
-                            : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400'
+                            : 'bg-surface border border-theme text-secondary hover:border-blue-400'
                         }`}
                       >
                         <Droplets className="w-3.5 h-3.5" /> Blur
@@ -599,7 +599,7 @@ export default function CreatePage() {
                         className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                           imagePreviewMode === 'watermark'
                             ? 'bg-blue-600 text-white shadow'
-                            : 'bg-white border border-gray-200 text-gray-600 hover:border-blue-400'
+                            : 'bg-surface border border-theme text-secondary hover:border-blue-400'
                         }`}
                       >
                         <Lock className="w-3.5 h-3.5" /> Watermark only
@@ -614,7 +614,7 @@ export default function CreatePage() {
                   ) : Object.keys(generatedPreviews).length > 0 ? (
                     <div className="flex gap-2 flex-wrap">
                       {Object.entries(generatedPreviews).map(([idx, url]) => (
-                        <img key={idx} src={url} alt="preview" className="h-20 rounded-lg object-cover border border-blue-200" />
+                        <img key={idx} src={url} alt="preview" className="h-20 rounded-lg object-cover border border-blue-200 dark:border-blue-900/50" />
                       ))}
                     </div>
                   ) : null}
@@ -656,7 +656,7 @@ export default function CreatePage() {
               <div className="card p-6">
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="text-lg font-semibold">Categories</h2>
-                  <span className="text-sm text-gray-500">{selectedCategories.length}/3 selected</span>
+                  <span className="text-sm text-secondary">{selectedCategories.length}/3 selected</span>
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   {CATEGORIES.map(cat => {
@@ -666,7 +666,7 @@ export default function CreatePage() {
                         key={cat.id}
                         onClick={() => toggleCategory(cat.id)}
                         className={`relative flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all ${
-                          isSelected ? 'border-blue-500 bg-blue-50 text-blue-700' : 'border-gray-200 hover:border-gray-300 text-gray-600'
+                          isSelected ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 text-blue-700' : 'border-theme hover:border-theme text-secondary'
                         }`}
                       >
                         {isSelected && (
@@ -702,11 +702,11 @@ export default function CreatePage() {
                 <h2 className="text-lg font-semibold mb-4">Pricing Tiers</h2>
                 <div className="space-y-4">
                   {!stagedFiles.every(f => f.type.startsWith('image/')) && (
-                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg">
                       <Eye className="w-5 h-5 text-blue-500 shrink-0" />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium">Stream (In-App)</p>
-                        <p className="text-sm text-gray-500">Full access in-app, no download</p>
+                        <p className="text-sm text-secondary">Full access in-app, no download</p>
                       </div>
                       <label className="flex items-center gap-2 shrink-0">
                         <input type="checkbox" checked={tiers[TIER_STREAM].enabled} onChange={e => handleTierChange(TIER_STREAM, 'enabled', e.target.checked)} className="w-4 h-4" />
@@ -715,17 +715,17 @@ export default function CreatePage() {
                       {tiers[TIER_STREAM].enabled && (
                         <div className="flex items-center gap-1 shrink-0">
                           <input type="number" step="0.001" min="0" value={tiers[TIER_STREAM].price} onChange={e => handleTierChange(TIER_STREAM, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
-                          <span className="text-xs text-gray-500">APT</span>
+                          <span className="text-xs text-secondary">APT</span>
                         </div>
                       )}
                     </div>
                   )}
 
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg">
                     <LinkIcon className="w-5 h-5 text-purple-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium">Cite</p>
-                      <p className="text-sm text-gray-500">On-chain citation certificate + access</p>
+                      <p className="text-sm text-secondary">On-chain citation certificate + access</p>
                     </div>
                     <label className="flex items-center gap-2 shrink-0">
                       <input type="checkbox" checked={tiers[TIER_CITE].enabled} onChange={e => handleTierChange(TIER_CITE, 'enabled', e.target.checked)} className="w-4 h-4" />
@@ -734,16 +734,16 @@ export default function CreatePage() {
                     {tiers[TIER_CITE].enabled && (
                       <div className="flex items-center gap-1 shrink-0">
                         <input type="number" step="0.001" min="0" value={tiers[TIER_CITE].price} onChange={e => handleTierChange(TIER_CITE, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
-                        <span className="text-xs text-gray-500">APT</span>
+                        <span className="text-xs text-secondary">APT</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg">
                     <Download className="w-5 h-5 text-green-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium">License</p>
-                      <p className="text-sm text-gray-500">Permanent download</p>
+                      <p className="text-sm text-secondary">Permanent download</p>
                     </div>
                     <label className="flex items-center gap-2 shrink-0">
                       <input type="checkbox" checked={tiers[TIER_LICENSE].enabled} onChange={e => handleTierChange(TIER_LICENSE, 'enabled', e.target.checked)} className="w-4 h-4" />
@@ -752,16 +752,16 @@ export default function CreatePage() {
                     {tiers[TIER_LICENSE].enabled && (
                       <div className="flex items-center gap-1 shrink-0">
                         <input type="number" step="0.001" min="0" value={tiers[TIER_LICENSE].price} onChange={e => handleTierChange(TIER_LICENSE, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
-                        <span className="text-xs text-gray-500">APT</span>
+                        <span className="text-xs text-secondary">APT</span>
                       </div>
                     )}
                   </div>
 
-                  <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="flex items-center gap-4 p-4 bg-secondary rounded-lg">
                     <Crown className="w-5 h-5 text-yellow-500 shrink-0" />
                     <div className="flex-1 min-w-0">
                       <p className="font-medium">Commercial</p>
-                      <p className="text-sm text-gray-500">Full commercial rights</p>
+                      <p className="text-sm text-secondary">Full commercial rights</p>
                     </div>
                     <label className="flex items-center gap-2 shrink-0">
                       <input type="checkbox" checked={tiers[TIER_COMMERCIAL].enabled} onChange={e => handleTierChange(TIER_COMMERCIAL, 'enabled', e.target.checked)} className="w-4 h-4" />
@@ -770,7 +770,7 @@ export default function CreatePage() {
                     {tiers[TIER_COMMERCIAL].enabled && (
                       <div className="flex items-center gap-1 shrink-0">
                         <input type="number" step="0.001" min="0" value={tiers[TIER_COMMERCIAL].price} onChange={e => handleTierChange(TIER_COMMERCIAL, 'price', parseFloat(e.target.value) || 0)} className="w-20 px-2 py-1 border rounded text-sm" />
-                        <span className="text-xs text-gray-500">APT</span>
+                        <span className="text-xs text-secondary">APT</span>
                       </div>
                     )}
                   </div>
@@ -779,7 +779,7 @@ export default function CreatePage() {
 
               {/* Progress indicator */}
               {publishProgress && (
-                <div className="card p-4 bg-blue-50 border border-blue-200">
+                <div className="card p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-900/50">
                   <div className="flex items-center gap-3 mb-2">
                     <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     <span className="text-sm font-medium text-blue-800">
@@ -809,7 +809,7 @@ export default function CreatePage() {
                 )}
               </button>
 
-              <p className="text-sm text-gray-500 text-center">
+              <p className="text-sm text-secondary text-center">
                 Platform fee: 10% • You receive 90% of all sales
               </p>
             </div>

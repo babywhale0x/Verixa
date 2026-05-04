@@ -202,7 +202,7 @@ export default function HomePage() {
 
                 <div className="flex gap-3 justify-center">
                   <Link href="/explore" className="btn-primary px-8 py-3.5 text-base shadow-lg shadow-blue-500/25">Browse Content <ArrowRight className="w-4 h-4" /></Link>
-                  <Link href="/vault" className="btn-secondary px-8 py-3.5 text-base border-gray-300 dark:border-gray-700">Store Content</Link>
+                  <Link href="/vault" className="btn-secondary px-8 py-3.5 text-base border-theme dark:border-gray-700">Store Content</Link>
                 </div>
               </div>
             )}
@@ -217,13 +217,13 @@ export default function HomePage() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.4 + idx * 0.1, duration: 0.4 }}
-              className="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 border-[var(--border)] transition-all hover:bg-black/5 dark:hover:bg-white/5"
+              className="card p-4 flex flex-col sm:flex-row items-center sm:items-start gap-4 border-[var(--border)] transition-all hover:bg-black/5 dark:hover:bg-surface/5"
             >
               <div className="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center" style={{ background: `${stat.color}15` }}>
                 <stat.icon className="w-5 h-5" style={{ color: stat.color }} />
               </div>
               <div className="text-center sm:text-left">
-                <p className="text-[11px] font-semibold uppercase tracking-wider mb-0.5 text-gray-500">{stat.label}</p>
+                <p className="text-[11px] font-semibold uppercase tracking-wider mb-0.5 text-secondary">{stat.label}</p>
                 <p className="text-xl font-extrabold leading-none" style={{ color: 'var(--text-primary)' }}>{stat.value}</p>
               </div>
             </motion.div>
@@ -366,7 +366,7 @@ export default function HomePage() {
         {/* ─── BROWSE BY TAG ─── */}
         <section>
           <div className="flex items-center gap-2 mb-5">
-            <Clock className="w-5 h-5 text-gray-400" />
+            <Clock className="w-5 h-5 text-muted" />
             <h2 className="text-xl font-bold" style={{ color: 'var(--text-primary)' }}>Browse by Tag</h2>
           </div>
           <div className="flex flex-wrap gap-2">

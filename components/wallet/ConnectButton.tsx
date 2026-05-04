@@ -38,45 +38,45 @@ export function ConnectButton() {
       <div className="relative" ref={dropdownRef}>
         <button
           onClick={() => setShowDropdown(!showDropdown)}
-          className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-4 py-2 bg-surface border border-theme rounded-lg hover:bg-secondary transition-colors"
         >
           <div className="w-2 h-2 bg-green-500 rounded-full" />
-          <span className="font-medium text-gray-900">
+          <span className="font-medium text-primary">
             {formatAddress(account.address.toString())}
           </span>
-          <ChevronDown className="w-4 h-4 text-gray-500" />
+          <ChevronDown className="w-4 h-4 text-secondary" />
         </button>
 
         {showDropdown && (
-          <div className="absolute right-0 mt-2 w-56 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-            <div className="px-4 py-3 bg-gray-50 border-b border-gray-100">
-              <p className="text-xs text-gray-500">Connected wallet</p>
-              <p className="text-sm font-mono font-medium text-gray-900 truncate">
+          <div className="absolute right-0 mt-2 w-56 bg-surface border border-theme rounded-xl shadow-lg z-50 overflow-hidden">
+            <div className="px-4 py-3 bg-secondary border-b border-theme">
+              <p className="text-xs text-secondary">Connected wallet</p>
+              <p className="text-sm font-mono font-medium text-primary truncate">
                 {account.address.toString().slice(0, 16)}...
               </p>
             </div>
             <div className="p-1">
               <button
                 onClick={copyAddress}
-                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-gray-50 rounded-lg transition-colors"
+                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-secondary rounded-lg transition-colors"
               >
-                <Copy className="w-4 h-4 text-gray-500" />
+                <Copy className="w-4 h-4 text-secondary" />
                 <span>Copy Address</span>
               </button>
               <a
                 href={`https://explorer.aptoslabs.com/account/${account.address.toString()}?network=testnet`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-gray-50 rounded-lg transition-colors"
+                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-secondary rounded-lg transition-colors"
                 onClick={() => setShowDropdown(false)}
               >
-                <ExternalLink className="w-4 h-4 text-gray-500" />
+                <ExternalLink className="w-4 h-4 text-secondary" />
                 <span>View on Explorer</span>
               </a>
-              <div className="border-t border-gray-100 my-1" />
+              <div className="border-t border-theme my-1" />
               <button
                 onClick={() => { disconnect(); setShowDropdown(false); }}
-                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-red-50 text-red-600 rounded-lg transition-colors"
+                className="flex items-center gap-3 w-full px-3 py-2 text-sm text-left hover:bg-red-50 dark:hover:bg-red-950/30 text-red-600 dark:text-red-400 rounded-lg transition-colors"
               >
                 <LogOut className="w-4 h-4" />
                 <span>Disconnect</span>
@@ -100,10 +100,10 @@ export function ConnectButton() {
       </button>
 
       {showWalletPicker && (
-        <div className="absolute right-0 mt-2 w-64 bg-white border border-gray-200 rounded-xl shadow-lg z-50 overflow-hidden">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="font-semibold text-gray-900">Connect a wallet</p>
-            <p className="text-xs text-gray-500 mt-0.5">Choose your preferred wallet</p>
+        <div className="absolute right-0 mt-2 w-64 bg-surface border border-theme rounded-xl shadow-lg z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-theme">
+            <p className="font-semibold text-primary">Connect a wallet</p>
+            <p className="text-xs text-secondary mt-0.5">Choose your preferred wallet</p>
           </div>
           <div className="p-2">
             {wallets && wallets.length > 0 ? (
@@ -111,7 +111,7 @@ export function ConnectButton() {
                 <button
                   key={wallet.name}
                   onClick={() => { connect(wallet.name); setShowWalletPicker(false); }}
-                  className="flex items-center gap-3 w-full px-3 py-3 text-left hover:bg-gray-50 rounded-lg transition-colors"
+                  className="flex items-center gap-3 w-full px-3 py-3 text-left hover:bg-secondary rounded-lg transition-colors"
                 >
                   {wallet.icon ? (
                     <img src={wallet.icon} alt={wallet.name} className="w-8 h-8 rounded-lg" />
@@ -121,15 +121,15 @@ export function ConnectButton() {
                     </div>
                   )}
                   <div>
-                    <p className="font-medium text-gray-900">{wallet.name}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-medium text-primary">{wallet.name}</p>
+                    <p className="text-xs text-secondary">
                       {wallet.readyState === 'Installed' ? 'Installed' : 'Not installed'}
                     </p>
                   </div>
                 </button>
               ))
             ) : (
-              <div className="px-3 py-4 text-center text-sm text-gray-500">
+              <div className="px-3 py-4 text-center text-sm text-secondary">
                 <p>No wallets detected.</p>
                 <a
                   href="https://petra.app"
@@ -142,8 +142,8 @@ export function ConnectButton() {
               </div>
             )}
           </div>
-          <div className="px-4 py-3 bg-gray-50 border-t border-gray-100">
-            <p className="text-xs text-gray-500 text-center">
+          <div className="px-4 py-3 bg-secondary border-t border-theme">
+            <p className="text-xs text-secondary text-center">
               Powered by Aptos • Testnet
             </p>
           </div>

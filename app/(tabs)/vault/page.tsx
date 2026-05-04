@@ -367,20 +367,20 @@ export default function VaultPage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-secondary flex items-center justify-center">
         <div className="text-center">
-          <Lock className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+          <Lock className="w-16 h-16 mx-auto text-muted mb-4" />
           <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-gray-600">Connect your wallet to access your vault</p>
+          <p className="text-secondary">Connect your wallet to access your vault</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-secondary">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-surface border-b border-theme">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <h1 className="text-xl font-bold">Your Vault</h1>
@@ -398,18 +398,18 @@ export default function VaultPage() {
         {/* Storage Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Storage Used</p>
+            <p className="text-sm text-secondary">Storage Used</p>
             <p className="text-2xl font-bold">{formatFileSize(storageStats.totalBytes)}</p>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">ShelbyUSD Balance</p>
+            <p className="text-sm text-secondary">ShelbyUSD Balance</p>
             <div className="flex items-center gap-2 mt-1">
               <div className="w-2 h-2 rounded-full bg-green-500" />
               <p className="text-2xl font-bold">{(Number(storageStats.walletBalance) / 1e8).toFixed(2)} SUSD</p>
             </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-gray-600">Total Fees Paid</p>
+            <p className="text-sm text-secondary">Total Fees Paid</p>
             <p className="text-2xl font-bold text-green-600">
               {files.reduce((sum, f) => sum + (f.storageFee || 0), 0).toFixed(4)} SUSD
             </p>
@@ -418,13 +418,13 @@ export default function VaultPage() {
 
         {/* Upload Area */}
         {stagedFiles.length > 0 ? (
-          <div className="card p-6 mb-8 border border-blue-200 bg-blue-50">
+          <div className="card p-6 mb-8 border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/20">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold">Confirm Upload</h2>
               <button
                 onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
                 disabled={isUploading}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-700"
+                className="flex items-center gap-1 text-sm text-secondary hover:text-primary"
               >
                 <ArrowLeft className="w-4 h-4" /> Change files
               </button>
@@ -437,11 +437,11 @@ export default function VaultPage() {
                   ? (stagedFiles.length === 1 ? stagedTitle : `${stagedTitle} ${i + 1}`)
                   : f.name;
                 return (
-                  <div key={i} className="flex items-center gap-3 p-3 bg-white rounded-lg">
+                  <div key={i} className="flex items-center gap-3 p-3 bg-surface rounded-lg">
                     {getFileIcon(f.type)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{finalName}</p>
-                      <p className="text-xs text-gray-400">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
+                      <p className="text-xs text-muted">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
                     </div>
                   </div>
                 );
@@ -450,28 +450,28 @@ export default function VaultPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-primary mb-1">
                   {stagedFiles.length === 1 ? 'Name' : 'Base Name'}
                 </label>
                 <input
                   type="text"
                   value={stagedTitle}
                   onChange={(e) => setStagedTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
+                  className="w-full px-4 py-2 border border-theme rounded-xl bg-surface"
                   placeholder={stagedFiles[0]?.name || 'Enter name'}
                 />
                 {stagedFiles.length > 1 && (
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-secondary mt-1">
                     Files will be named <strong>{stagedTitle || 'Name'} 1</strong>, <strong>{stagedTitle || 'Name'} 2</strong>…
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description (Optional)</label>
+                <label className="block text-sm font-medium text-primary mb-1">Description (Optional)</label>
                 <textarea
                   value={stagedDescription}
                   onChange={(e) => setStagedDescription(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-xl bg-white"
+                  className="w-full px-4 py-2 border border-theme rounded-xl bg-surface"
                   rows={2}
                   placeholder="Describe these files"
                 />
@@ -479,7 +479,7 @@ export default function VaultPage() {
 
               {/* Progress indicator */}
               {uploadProgress && (
-                <div className="p-3 bg-white rounded-lg border border-blue-200">
+                <div className="p-3 bg-surface rounded-lg border border-blue-200 dark:border-blue-900/50">
                   <div className="flex items-center gap-3 mb-2">
                     <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
                     <span className="text-sm font-medium text-blue-800">
@@ -506,7 +506,7 @@ export default function VaultPage() {
                 <button
                   onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
                   disabled={isUploading}
-                  className="px-6 py-3 border border-gray-300 rounded-xl hover:bg-gray-100 disabled:opacity-50 font-medium"
+                  className="px-6 py-3 border border-theme rounded-xl hover:bg-secondary disabled:opacity-50 font-medium"
                 >
                   Cancel
                 </button>
@@ -517,18 +517,18 @@ export default function VaultPage() {
           <div
             {...getRootProps()}
             className={`border-2 border-dashed rounded-xl p-5 flex flex-col sm:flex-row items-center justify-center gap-4 cursor-pointer transition-all mb-8 shadow-sm ${
-              isDragActive ? 'border-blue-500 bg-blue-50 scale-[1.01]' : 'border-gray-300 hover:border-gray-400 bg-white hover:bg-gray-50'
+              isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]' : 'border-theme hover:border-gray-400 bg-surface hover:bg-secondary'
             }`}
           >
             <input {...getInputProps()} />
-            <div className="p-3 bg-blue-50 text-blue-600 rounded-full shadow-inner">
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full shadow-inner">
                <Upload className="w-5 h-5" />
             </div>
             <div className="text-center sm:text-left flex-1">
-              <p className="text-sm font-semibold text-gray-800">
+              <p className="text-sm font-semibold text-primary">
                 {isDragActive ? 'Drop files here to securely upload' : 'Click to browse or drag & drop files here'}
               </p>
-              <p className="text-xs text-gray-500 mt-0.5">Max 500 MB per file · Decentralized & Encrypted</p>
+              <p className="text-xs text-secondary mt-0.5">Max 500 MB per file · Decentralized & Encrypted</p>
             </div>
             <button className="hidden sm:block px-5 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 shadow-sm transition-colors">
               Browse Files
@@ -542,7 +542,7 @@ export default function VaultPage() {
             <Loader2 className="w-8 h-8 animate-spin mx-auto" />
           </div>
         ) : groupedItems.length === 0 ? (
-          <div className="text-center py-12 text-gray-500">
+          <div className="text-center py-12 text-secondary">
             <File className="w-16 h-16 mx-auto mb-4" />
             <p>No files yet. Upload your first file above.</p>
           </div>
@@ -550,11 +550,11 @@ export default function VaultPage() {
           <div className="card overflow-hidden">
             
               {currentFolder && (
-                 <div className="flex items-center gap-2 mb-4 p-4 bg-white rounded-lg border border-gray-200">
-                    <button onClick={() => setCurrentFolder(null)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 px-3 py-1.5 rounded-lg transition-colors">
+                 <div className="flex items-center gap-2 mb-4 p-4 bg-surface rounded-lg border border-theme">
+                    <button onClick={() => setCurrentFolder(null)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
                       <ArrowLeft className="w-4 h-4" /> Back to Vault
                     </button>
-                    <span className="font-semibold text-gray-700 flex items-center gap-2">
+                    <span className="font-semibold text-primary flex items-center gap-2">
                       <FolderIcon className="w-5 h-5 text-blue-400" />
                       {currentFolder.name}
                     </span>
@@ -562,44 +562,44 @@ export default function VaultPage() {
               )}
 
 <table className="w-full">
-              <thead className="bg-gray-50 border-b border-gray-200">
+              <thead className="bg-secondary border-b border-theme">
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">File</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Size</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Fee Paid</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Status</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-gray-500">Actions</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">File</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Size</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Fee Paid</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Type</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Status</th>
+                  <th className="px-6 py-3 text-right text-sm font-medium text-secondary">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-200">
+              <tbody className="divide-y divide-[var(--border)]">
                 {(currentFolder ? currentFolder.files : groupedItems).map((item) => {
                   if (item.isFolder) {
                     return (
-                      <tr key={item.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => setCurrentFolder(item)}>
+                      <tr key={item.id} className="hover:bg-secondary cursor-pointer" onClick={() => setCurrentFolder(item)}>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-3">
                             <FolderIcon className="w-5 h-5 text-blue-500 fill-blue-100" />
                             <span className="font-medium">{item.name}</span>
-                            <span className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{item.files.length} files</span>
+                            <span className="text-xs bg-gray-100 text-secondary px-2 py-0.5 rounded-full">{item.files.length} files</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-secondary">
                           {formatFileSize(item.size)}
                         </td>
                         <td className="px-6 py-4 text-sm font-medium text-green-600">
                           {item.storageFee != null ? item.storageFee.toFixed(4) : '—'} SUSD
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600">
+                        <td className="px-6 py-4 text-sm text-secondary">
                           Folder
                         </td>
                         <td className="px-6 py-4">
-                           <span className="text-sm text-gray-500">—</span>
+                           <span className="text-sm text-secondary">—</span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
                             onClick={(e) => { e.stopPropagation(); setCurrentFolder(item); }}
-                            className="p-2 hover:bg-gray-100 rounded-lg text-blue-600 font-medium text-sm"
+                            className="p-2 hover:bg-secondary rounded-lg text-blue-600 font-medium text-sm"
                           >
                             Open Folder
                           </button>
@@ -610,7 +610,7 @@ export default function VaultPage() {
                   
                   const file = item as StoredFile;
                   return (
-                    <tr key={file.id} className="hover:bg-gray-50">
+                    <tr key={file.id} className="hover:bg-secondary">
 
 <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -618,13 +618,13 @@ export default function VaultPage() {
                         <span className="font-medium">{file.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-secondary">
                       {formatFileSize(file.size)}
                     </td>
                     <td className="px-6 py-4 text-sm font-medium text-green-600">
                       {file.storageFee != null ? file.storageFee.toFixed(4) : '—'} SUSD
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-secondary">
                       {file.contentType}
                     </td>
                     <td className="px-6 py-4">
@@ -632,7 +632,7 @@ export default function VaultPage() {
                         <div className="flex items-center gap-2">
                           {file.encrypted && <Lock className="w-4 h-4 text-green-500" />}
                           {file.isPublic && <Globe className="w-4 h-4 text-blue-500" />}
-                          <span className="text-sm text-gray-600">
+                          <span className="text-sm text-secondary">
                             {file.isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
@@ -645,21 +645,21 @@ export default function VaultPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePreview(file); }}
-                          className="p-2 hover:bg-gray-100 rounded-lg text-blue-600"
+                          className="p-2 hover:bg-secondary rounded-lg text-blue-600"
                           title="Preview"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(file.blobId, file.name); }}
-                          className="p-2 hover:bg-gray-100 rounded-lg"
+                          className="p-2 hover:bg-secondary rounded-lg"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDelete(file.blobId); }}
-                          className="p-2 hover:bg-red-50 text-red-600 rounded-lg"
+                          className="p-2 hover:bg-red-50 dark:bg-red-900/20 dark:hover:bg-red-900/20 text-red-600 rounded-lg"
                           title="Delete"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -689,20 +689,20 @@ export default function VaultPage() {
       {/* Preview Modal */}
       {previewFile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-gray-100">
+          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-theme">
               <div className="flex items-center gap-3">
                 {getFileIcon(previewFile.contentType)}
                 <h3 className="font-semibold text-lg">{previewFile.name}</h3>
               </div>
-              <button onClick={closePreview} className="p-2 hover:bg-gray-100 rounded-full transition-colors">
+              <button onClick={closePreview} className="p-2 hover:bg-secondary rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-auto bg-gray-50 flex items-center justify-center p-4 min-h-[300px]">
+            <div className="flex-1 overflow-auto bg-secondary flex items-center justify-center p-4 min-h-[300px]">
               {isPreviewLoading ? (
-                <div className="flex flex-col items-center text-gray-500">
+                <div className="flex flex-col items-center text-secondary">
                    <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
                    <p>Decrypting and loading preview...</p>
                 </div>
@@ -715,15 +715,15 @@ export default function VaultPage() {
                   <audio src={previewUrl} controls className="w-full max-w-md" />
                 ) : (
                   <div className="text-center">
-                    <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 mb-4">Preview not available for this file type.</p>
+                    <FileText className="w-16 h-16 text-muted mx-auto mb-4" />
+                    <p className="text-secondary mb-4">Preview not available for this file type.</p>
                     <button onClick={() => handleDownload(previewFile.blobId, previewFile.name)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
                        <Download className="w-4 h-4 inline mr-2" /> Download to View
                     </button>
                   </div>
                 )
               ) : (
-                <div className="text-gray-500">Failed to load preview.</div>
+                <div className="text-secondary">Failed to load preview.</div>
               )}
             </div>
           </div>
