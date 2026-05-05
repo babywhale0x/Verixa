@@ -66,10 +66,10 @@ const TIER_LABELS: Record<number, string> = {
 };
 
 function getTypeIcon(type: string) {
-  if (type.startsWith('image/')) return <ImageIcon className="w-5 h-5 text-blue-500" />;
-  if (type.startsWith('audio/')) return <Music className="w-5 h-5 text-purple-500" />;
+  if (type.startsWith('image/')) return <ImageIcon className="w-5 h-5 text-text-primary" />;
+  if (type.startsWith('audio/')) return <Music className="w-5 h-5 text-text-secondary" />;
   if (type.startsWith('video/')) return <Play className="w-5 h-5 text-red-500" />;
-  return <FileText className="w-5 h-5 text-green-500" />;
+  return <FileText className="w-5 h-5 text-success" />;
 }
 
 function formatBytes(bytes: string | number) {
@@ -204,11 +204,11 @@ export default function ProfilePage() {
     return (
       <div className="min-h-[80vh] flex items-center justify-center">
         <div className="text-center card p-10 max-w-sm w-full mx-4 glow">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-blue-600 to-blue-400 flex items-center justify-center mx-auto mb-6">
+          <div className="w-16 h-16 rounded-xl bg-surface   flex items-center justify-center mx-auto mb-6">
             <User className="w-8 h-8 text-white" />
           </div>
-          <h2 className="text-2xl font-bold mb-3">Your Profile</h2>
-          <p className="text-sm text-secondary mb-6">Connect your wallet to manage your assets, view your purchased content, and track your creator stats.</p>
+          <h2 className="text-2xl font-medium mb-3">Your Profile</h2>
+          <p className="text-sm text-text-secondary mb-6">Connect your wallet to manage your assets, view your purchased content, and track your creator stats.</p>
         </div>
       </div>
     );
@@ -218,28 +218,28 @@ export default function ProfilePage() {
   const displayAddr = shortAddr ? `${shortAddr.slice(0, 8)}...${shortAddr.slice(-6)}` : '';
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-6xl mx-auto px-8 py-8 space-y-8">
       
       {/* ─── Profile Header ─── */}
       <div className="flex flex-col md:flex-row items-center gap-6 p-6 card">
-        <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white shadow-md"
+        <div className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-medium text-white "
              style={{ background: 'linear-gradient(135deg, #6366f1, #ec4899)' }}>
           {displayAddr.slice(0,2).toUpperCase()}
         </div>
         <div className="text-center md:text-left flex-1">
-          <h1 className="text-2xl font-bold tracking-tight mb-2">{displayAddr}</h1>
+          <h1 className="text-2xl font-medium tracking-tight mb-2">{displayAddr}</h1>
           <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm">
-            <button onClick={copyAddress} className="flex items-center gap-1.5 text-secondary hover:text-accent transition-colors">
+            <button onClick={copyAddress} className="flex items-center gap-1.5 text-text-secondary hover:text-accent transition-colors">
               <Copy className="w-4 h-4" /> Copy Address
             </button>
             <a href={`https://explorer.aptoslabs.com/account/${shortAddr}?network=testnet`} target="_blank" rel="noreferrer" 
-               className="flex items-center gap-1.5 text-secondary hover:text-accent transition-colors">
+               className="flex items-center gap-1.5 text-text-secondary hover:text-accent transition-colors">
               <ExternalLink className="w-4 h-4" /> View on Explorer
             </a>
           </div>
         </div>
         <div className="flex gap-3">
-          <button onClick={() => setShowFundModal(true)} className="btn-primary py-2 px-4 shadow-none glow">
+          <button onClick={() => setShowFundModal(true)} className="btn-primary py-2 px-4 -none glow">
             <ArrowDownLeft className="w-4 h-4" /> Receive
           </button>
           <button onClick={() => toast.success('Send feature coming soon')} className="btn-secondary py-2 px-4">
@@ -252,47 +252,47 @@ export default function ProfilePage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         
         {/* APT Balance */}
-        <div className="card p-5 relative overflow-hidden group hover-lift lg:col-span-2 shadow-sm">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/10 rounded-full blur-2xl group-hover:bg-blue-500/20 transition-all" />
+        <div className="card p-5 relative overflow-hidden group hover-lift lg:col-span-2 ">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-primary/10 rounded-full blur-2xl group-hover:bg-primary/20 transition-all" />
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-secondary">
-              <div className="w-2 h-2 rounded-full bg-blue-500" /> Aptos (APT)
+            <h3 className="text-sm font-medium flex items-center gap-2 text-text-secondary">
+              <div className="w-2 h-2 rounded-full bg-primary" /> Aptos (APT)
             </h3>
-            <button onClick={() => fetchBalances(shortAddr!)} className="text-xs font-semibold text-accent hover:underline">Refresh</button>
+            <button onClick={() => fetchBalances(shortAddr!)} className="text-xs font-medium text-accent hover:underline">Refresh</button>
           </div>
-          <div className="text-3xl font-extrabold tracking-tight">
+          <div className="text-3xl font-medium tracking-tight">
             {isLoadingBalances ? <div className="h-9 w-32 skeleton rounded" /> : (aptBalance !== null ? formatApt(aptBalance) : '0 APT')}
           </div>
         </div>
 
         {/* ShelbyUSD Balance */}
-        <div className="card p-5 relative overflow-hidden group hover-lift lg:col-span-2 shadow-sm">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-green-500/10 rounded-full blur-2xl group-hover:bg-green-500/20 transition-all" />
+        <div className="card p-5 relative overflow-hidden group hover-lift lg:col-span-2 ">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-success/10 rounded-full blur-2xl group-hover:bg-success/20 transition-all" />
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-sm font-semibold flex items-center gap-2 text-secondary">
-              <div className="w-2 h-2 rounded-full bg-green-500" /> ShelbyUSD
+            <h3 className="text-sm font-medium flex items-center gap-2 text-text-secondary">
+              <div className="w-2 h-2 rounded-full bg-success" /> ShelbyUSD
             </h3>
-            <a href="https://discord.gg/shelbyprotocol" target="_blank" rel="noreferrer" className="text-xs font-semibold text-green-500 hover:underline">Get Token</a>
+            <a href="https://discord.gg/shelbyprotocol" target="_blank" rel="noreferrer" className="text-xs font-medium text-success hover:underline">Get Token</a>
           </div>
-          <div className="text-3xl font-extrabold tracking-tight">
+          <div className="text-3xl font-medium tracking-tight">
             {isLoadingBalances ? <div className="h-9 w-32 skeleton rounded" /> : (shelbyBalance !== null ? `${(shelbyBalance/1e8).toFixed(2)} SUSD` : '0 SUSD')}
           </div>
         </div>
 
         {/* Creator Stats */}
         {[
-          { label: 'Items Listed', value: stats.listed, icon: Package, color: 'text-blue-500', bg: 'bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center rounded-lg w-10 h-10' },
-          { label: 'Items Sold', value: stats.sold, icon: Tag, color: 'text-purple-500', bg: 'bg-purple-50 flex items-center justify-center rounded-lg w-10 h-10' },
-          { label: 'Total Earned', value: `${(stats.earned/1e8).toFixed(2)} APT`, icon: DollarSign, color: 'text-green-500', bg: 'bg-green-50 flex items-center justify-center rounded-lg w-10 h-10' },
-          { label: 'Items Bought', value: stats.purchased, icon: Download, color: 'text-orange-500', bg: 'bg-orange-50 flex items-center justify-center rounded-lg w-10 h-10' },
+          { label: 'Items Listed', value: stats.listed, icon: Package, color: 'text-text-primary', bg: 'bg-primary-light' },
+          { label: 'Items Sold', value: stats.sold, icon: Tag, color: 'text-text-secondary', bg: 'bg-primary-light flex items-center justify-center rounded-lg w-10 h-10' },
+          { label: 'Total Earned', value: `${(stats.earned/1e8).toFixed(2)} APT`, icon: DollarSign, color: 'text-success', bg: 'bg-green-50 flex items-center justify-center rounded-lg w-10 h-10' },
+          { label: 'Items Bought', value: stats.purchased, icon: Download, color: 'text-warning', bg: 'bg-orange-50 flex items-center justify-center rounded-lg w-10 h-10' },
         ].map((stat, i) => (
-          <div key={i} className="card p-4 flex items-center gap-4 hover-lift shadow-sm">
+          <div key={i} className="card p-4 flex items-center gap-4 hover-lift ">
             <div className={stat.bg}>
               <stat.icon className={`w-5 h-5 ${stat.color}`} />
             </div>
             <div>
-              <p className="text-xs font-semibold text-muted uppercase tracking-wider">{stat.label}</p>
-              <div className="text-xl font-bold mt-0.5">
+              <p className="text-xs font-medium text-text-muted uppercase tracking-wider">{stat.label}</p>
+              <div className="text-xl font-medium mt-0.5">
                 {isLoadingStats ? <div className="h-6 w-16 skeleton rounded mt-1" /> : stat.value}
               </div>
             </div>
@@ -302,40 +302,40 @@ export default function ProfilePage() {
 
       {/* ─── Storage Tracker ─── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+        <div className="card p-5 flex items-center gap-4 hover-lift  relative overflow-hidden">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/10 rounded-full blur-2xl" />
           <div className="bg-emerald-50 flex items-center justify-center rounded-lg w-10 h-10">
             <Receipt className="w-5 h-5 text-emerald-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Total Fees Paid</p>
-            <div className="text-xl font-bold mt-0.5 text-emerald-600">
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Total Fees Paid</p>
+            <div className="text-xl font-medium mt-0.5 text-text-primary">
               {isLoadingStats ? <div className="h-6 w-20 skeleton rounded mt-1" /> : `${stats.totalStorageFees.toFixed(4)} SUSD`}
             </div>
           </div>
         </div>
 
-        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+        <div className="card p-5 flex items-center gap-4 hover-lift  relative overflow-hidden">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-cyan-500/10 rounded-full blur-2xl" />
           <div className="bg-cyan-50 flex items-center justify-center rounded-lg w-10 h-10">
             <HardDrive className="w-5 h-5 text-cyan-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Total Storage</p>
-            <div className="text-xl font-bold mt-0.5">
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Total Storage</p>
+            <div className="text-xl font-medium mt-0.5">
               {isLoadingStats ? <div className="h-6 w-20 skeleton rounded mt-1" /> : formatBytes(stats.totalStorageBytes)}
             </div>
           </div>
         </div>
 
-        <div className="card p-5 flex items-center gap-4 hover-lift shadow-sm relative overflow-hidden">
+        <div className="card p-5 flex items-center gap-4 hover-lift  relative overflow-hidden">
           <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/10 rounded-full blur-2xl" />
           <div className="bg-amber-50 flex items-center justify-center rounded-lg w-10 h-10">
             <Clock className="w-5 h-5 text-amber-500" />
           </div>
           <div>
-            <p className="text-xs font-semibold text-muted uppercase tracking-wider">Files Uploaded</p>
-            <div className="text-xl font-bold mt-0.5">
+            <p className="text-xs font-medium text-text-muted uppercase tracking-wider">Files Uploaded</p>
+            <div className="text-xl font-medium mt-0.5">
               {isLoadingStats ? <div className="h-6 w-16 skeleton rounded mt-1" /> : stats.totalFiles}
             </div>
           </div>
@@ -344,22 +344,20 @@ export default function ProfilePage() {
 
       {/* ─── Content Tabs ─── */}
       <div className="pt-4">
-        <div className="flex gap-6 border-b border-theme mb-6">
+        <div className="flex gap-6 border-b border-border mb-6">
           <button 
             onClick={() => setActiveTab('items')}
-            className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'items' ? 'border-accent text-accent' : 'border-transparent text-secondary hover:text-primary'}`}
-          >
-            My Listed Items <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-secondary">{myFiles.length}</span>
+            className={`pb-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'items' ? 'border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+          >My listed items<span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-bg">{myFiles.length}</span>
           </button>
           <button 
             onClick={() => setActiveTab('purchases')}
-            className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'purchases' ? 'border-accent text-accent' : 'border-transparent text-secondary hover:text-primary'}`}
-          >
-            Purchased Content <span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-secondary">{purchases.length}</span>
+            className={`pb-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'purchases' ? 'border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
+          >Purchased content<span className="ml-1.5 px-2 py-0.5 rounded-full text-xs bg-bg">{purchases.length}</span>
           </button>
           <button 
             onClick={() => setActiveTab('history')}
-            className={`pb-3 font-semibold text-sm transition-colors border-b-2 ${activeTab === 'history' ? 'border-accent text-accent' : 'border-transparent text-secondary hover:text-primary'}`}
+            className={`pb-3 font-medium text-sm transition-colors border-b-2 ${activeTab === 'history' ? 'border-accent text-accent' : 'border-transparent text-text-secondary hover:text-text-primary'}`}
           >
             History
           </button>
@@ -372,10 +370,10 @@ export default function ProfilePage() {
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-accent" /></div>
             ) : myFiles.length === 0 ? (
               <div className="text-center py-16 card bg-surface/50 border-dashed">
-                <Package className="w-12 h-12 text-muted mx-auto mb-4" />
-                <h3 className="text-lg font-bold mb-2">No items listed yet</h3>
-                <p className="text-secondary mb-6">Start monetising your content on Verixa.</p>
-                <a href="/create" className="btn-primary glow">Create Content</a>
+                <Package className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No items listed yet</h3>
+                <p className="text-text-secondary mb-6">Start monetising your content on Verixa.</p>
+                <a href="/create" className="btn-primary glow">Create content</a>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -386,8 +384,8 @@ export default function ProfilePage() {
                   const isExpiringSoon = daysLeft > 0 && daysLeft <= 30;
 
                   return (
-                  <div key={file.id} className={`card overflow-hidden transition-all ${file.isPublished ? 'border-theme' : 'border-red-500/30 opacity-75'}`}>
-                    <div className="h-32 bg-secondary relative flex items-center justify-center">
+                  <div key={file.id} className={`card overflow-hidden transition-all ${file.isPublished ? 'border-border' : 'border-red-500/30 opacity-75'}`}>
+                    <div className="h-32 bg-bg relative flex items-center justify-center">
                       {file.previewUrl ? (
                          file.contentType.startsWith('image/') 
                            ? <img src={file.previewUrl} className="w-full h-full object-cover" alt="preview" />
@@ -396,31 +394,31 @@ export default function ProfilePage() {
                       
                       {!file.isPublished && (
                         <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
-                          <span className="badge bg-red-500 text-white font-bold tracking-widest text-xs px-3">DELISTED</span>
+                          <span className="badge bg-red-500 text-white font-medium tracking-widest text-xs px-3">DELISTED</span>
                         </div>
                       )}
                     </div>
                     
                     <div className="p-4 bg-surface">
-                      <h4 className="font-semibold mb-1 truncate">{file.name}</h4>
-                      <p className="text-xs text-muted mb-2">{new Date(file.createdAt).toLocaleDateString()}</p>
+                      <h4 className="font-medium mb-1 truncate">{file.name}</h4>
+                      <p className="text-xs text-text-muted mb-2">{new Date(file.createdAt).toLocaleDateString()}</p>
 
                       {/* Per-file tracking details */}
                       <div className="space-y-1.5 mb-3 text-xs">
                         <div className="flex items-center justify-between">
-                          <span className="text-secondary flex items-center gap-1"><Receipt className="w-3 h-3" /> Fee Paid</span>
-                          <span className="font-semibold text-emerald-600">
+                          <span className="text-text-secondary flex items-center gap-1"><Receipt className="w-3 h-3" /> Fee Paid</span>
+                          <span className="font-medium text-text-primary">
                             {file.storageFee ? `${parseFloat(file.storageFee).toFixed(4)} SUSD` : '—'}
                           </span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-secondary flex items-center gap-1"><HardDrive className="w-3 h-3" /> Size</span>
+                          <span className="text-text-secondary flex items-center gap-1"><HardDrive className="w-3 h-3" /> Size</span>
                           <span className="font-medium">{formatBytes(file.size)}</span>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-secondary flex items-center gap-1"><Clock className="w-3 h-3" /> Expiry</span>
-                          <span className={`font-semibold ${
-                            isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : 'text-secondary'
+                          <span className="text-text-secondary flex items-center gap-1"><Clock className="w-3 h-3" /> Expiry</span>
+                          <span className={`font-medium ${
+                            isExpired ? 'text-red-600' : isExpiringSoon ? 'text-amber-600' : 'text-text-secondary'
                           }`}>
                             {isExpired ? 'Expired' : `${daysLeft}d left`}
                           </span>
@@ -431,7 +429,7 @@ export default function ProfilePage() {
                         <button 
                           onClick={() => handleTogglePublish(file.id, file.isPublished)}
                           disabled={togglingFileId === file.id}
-                          className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5
+                          className={`flex-1 py-2 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5
                             ${file.isPublished 
                               ? 'bg-red-50 dark:bg-red-900/20 text-red-600 hover:bg-red-100' 
                               : 'bg-accent/10 text-accent hover:bg-accent/20'}`}
@@ -442,7 +440,7 @@ export default function ProfilePage() {
                         
                         <button 
                           onClick={() => toast('Price editing requires contract update. Coming soon!', { icon: '✏️' })}
-                          className="flex-1 py-2 bg-secondary text-primary hover:bg-theme border border-theme rounded-lg text-xs font-semibold transition-colors"
+                          className="flex-1 py-2 bg-bg text-text-primary hover:bg-theme border border-border rounded-lg text-xs font-medium transition-colors"
                         >
                           Edit Price
                         </button>
@@ -463,9 +461,9 @@ export default function ProfilePage() {
               <div className="flex justify-center py-12"><Loader2 className="w-8 h-8 animate-spin text-accent" /></div>
             ) : purchases.length === 0 ? (
               <div className="text-center py-16 card bg-surface/50 border-dashed">
-                <Download className="w-12 h-12 text-muted mx-auto mb-4" />
-                <h3 className="text-lg font-bold mb-2">No purchases yet</h3>
-                <p className="text-secondary mb-6">Explore the marketplace to find premium content.</p>
+                <Download className="w-12 h-12 text-text-muted mx-auto mb-4" />
+                <h3 className="text-lg font-medium mb-2">No purchases yet</h3>
+                <p className="text-text-secondary mb-6">Explore the marketplace to find premium content.</p>
                 <a href="/explore" className="btn-primary glow">Explore Content</a>
               </div>
             ) : (
@@ -474,12 +472,12 @@ export default function ProfilePage() {
                   const firstFile = p.content.files[0];
                   return (
                     <div key={p.purchaseId || p.id || pIdx} className="card overflow-hidden hover-lift flex flex-col">
-                      <div className="h-32 relative bg-secondary flex items-center justify-center">
+                      <div className="h-32 relative bg-bg flex items-center justify-center">
                         {firstFile && firstFile.previewUrl ? (
                            firstFile.contentType.startsWith('image/') 
                              ? <img src={firstFile.previewUrl} className="w-full h-full object-cover" alt="preview" />
                              : getTypeIcon(firstFile.contentType)
-                        ) : (firstFile ? getTypeIcon(firstFile.contentType) : <Package className="w-8 h-8 text-muted" />)}
+                        ) : (firstFile ? getTypeIcon(firstFile.contentType) : <Package className="w-8 h-8 text-text-muted" />)}
                         
                         <div className="absolute top-2 left-2 badge badge-accent bg-background/90 backdrop-blur">
                           <Lock className="w-3 h-3 mr-1" /> {TIER_LABELS[p.tierId] || 'Tier ' + p.tierId}
@@ -488,8 +486,8 @@ export default function ProfilePage() {
                       
                       <div className="p-4 flex-1 flex flex-col justify-between bg-surface">
                         <div>
-                          <h4 className="font-semibold mb-1 line-clamp-2">{p.content.title}</h4>
-                          <p className="text-xs text-secondary mb-4 flex items-center gap-1.5">
+                          <h4 className="font-medium mb-1 line-clamp-2">{p.content.title}</h4>
+                          <p className="text-xs text-text-secondary mb-4 flex items-center gap-1.5">
                             Purchased: {new Date(p.purchaseTimestamp).toLocaleDateString()}
                           </p>
                         </div>
@@ -497,14 +495,14 @@ export default function ProfilePage() {
                           {p.tierId >= 2 && (
                             <button 
                               onClick={() => setSelectedCertificate(p)}
-                              className="flex-1 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                              className="flex-1 py-2 bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 rounded-lg text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
                             >
                               <Shield className="w-3.5 h-3.5" /> {p.tierId === 2 ? 'Cite' : 'Certificate'}
                             </button>
                           )}
                           <a 
                             href={`/content/${p.contentId}`} 
-                            className="flex-1 py-2 bg-gray-900 text-white rounded-lg hover:bg-black text-xs font-semibold transition-colors flex items-center justify-center gap-1.5"
+                            className="flex-1 py-2 bg-text-primary text-white rounded-lg hover:bg-black text-xs font-medium transition-colors flex items-center justify-center gap-1.5"
                           >
                             {(p.tierId === 3 || p.tierId === 4) ? <Download className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                             View
@@ -522,10 +520,10 @@ export default function ProfilePage() {
         {/* Tab: History */}
         {activeTab === 'history' && (
           <div className="card">
-             <div className="p-8 text-center text-secondary border-dashed border-2 m-4 rounded-xl">
+             <div className="p-8 text-center text-text-secondary border-dashed border-2 m-4 rounded-xl">
                <History className="w-8 h-8 mx-auto mb-3 opacity-50" />
                <p>Detailed transaction history UI coming soon.</p>
-               <p className="text-xs text-muted mt-2">View on-chain explorer for immediate history.</p>
+               <p className="text-xs text-text-muted mt-2">View on-chain explorer for immediate history.</p>
              </div>
           </div>
         )}

@@ -13,7 +13,7 @@ export function ThemeToggle() {
   }, []);
 
   if (!mounted) {
-    return <div className="w-9 h-9 rounded-xl bg-gray-100 dark:bg-[#1c2438]" />;
+    return <div className="w-9 h-9 rounded-xl bg-primary-light dark:bg-[#1c2438]" />;
   }
 
   const isDark = resolvedTheme === 'dark';
@@ -23,7 +23,7 @@ export function ThemeToggle() {
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="w-9 h-9 flex items-center justify-center rounded-xl bg-gray-100 dark:bg-[var(--surface)] text-gray-600 dark:text-gray-300 border border-transparent dark:border-[var(--border)] transition-colors"
+      className="w-9 h-9 flex items-center justify-center rounded-xl bg-primary-light dark:bg-surface text-primary dark:text-gray-300 border border-transparent dark:border-border transition-colors"
       title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}

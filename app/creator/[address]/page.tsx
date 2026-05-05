@@ -135,11 +135,11 @@ export default function CreatorProfilePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex items-start justify-between">
             <div className="flex items-center gap-6">
-              <div className="w-24 h-24 bg-gradient-to-br from-blue-600 to-sky-400 rounded-full flex items-center justify-center text-white text-3xl font-bold border-4 border-white dark:border-gray-900 shadow-xl">
+              <div className="w-24 h-24 bg-surface   rounded-full flex items-center justify-center text-white text-3xl font-medium border-4 border-white dark:border-gray-900 shadow-xl">
                 {creatorAddress.slice(0, 2).toUpperCase()}
               </div>
               <div>
-                <h1 className="text-3xl font-bold mb-2">
+                <h1 className="text-3xl font-medium mb-2">
                   Creator {formatAddress(creatorAddress)}
                 </h1>
                 <div className="flex items-center gap-6 text-secondary">
@@ -162,7 +162,7 @@ export default function CreatorProfilePage() {
                 className={`px-6 py-3 rounded-lg font-medium flex items-center gap-2 ${
                   isSubscribed
                     ? 'bg-green-100 text-green-700'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
+                    : 'bg-primary text-white hover:bg-primary-hover'
                 } disabled:opacity-50`}
               >
                 {isSubscribing ? (
@@ -186,17 +186,17 @@ export default function CreatorProfilePage() {
           <div className="grid grid-cols-3 gap-6 mt-8">
             <div className="p-4 bg-secondary rounded-lg">
               <p className="text-sm text-secondary mb-1">Total Sales</p>
-              <p className="text-2xl font-bold">{creator?.totalSales.toString()}</p>
+              <p className="text-2xl font-medium">{creator?.totalSales.toString()}</p>
             </div>
             <div className="p-4 bg-secondary rounded-lg">
               <p className="text-sm text-secondary mb-1">Total Earnings</p>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-medium">
                 {creator ? formatApt(Number(creator.totalEarnings)) : '0 APT'}
               </p>
             </div>
             <div className="p-4 bg-secondary rounded-lg">
               <p className="text-sm text-secondary mb-1">Content Items</p>
-              <p className="text-2xl font-bold">{creator?.totalContents.toString()}</p>
+              <p className="text-2xl font-medium">{creator?.totalContents.toString()}</p>
             </div>
           </div>
         </div>
@@ -204,7 +204,7 @@ export default function CreatorProfilePage() {
 
       {/* Content Grid */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h2 className="text-xl font-semibold mb-6">Published Works</h2>
+        <h2 className="text-xl font-medium mb-6">Published Works</h2>
 
         {contents.length === 0 ? (
           <div className="text-center py-12 text-secondary">
@@ -216,18 +216,18 @@ export default function CreatorProfilePage() {
               <a
                 key={content.contentId.toString()}
                 href={`/content/${content.contentId.toString()}`}
-                className="card overflow-hidden hover:shadow-lg transition-shadow"
+                className="card overflow-hidden hover:shadow-sm transition-shadow"
               >
-                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                <div className="aspect-video bg-surface   flex items-center justify-center">
                   {getContentIcon(content.contentType)}
                 </div>
                 <div className="p-4">
-                  <h3 className="font-semibold mb-2">{content.title}</h3>
+                  <h3 className="font-medium mb-2">{content.title}</h3>
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-secondary">
                       {content.contentType.split('/')[1].toUpperCase()}
                     </span>
-                    <span className="font-semibold text-blue-600">
+                    <span className="font-medium text-primary">
                       {formatApt(Number(content.streamPrice))}
                     </span>
                   </div>

@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
       citation: citation
     };
 
-    // 5. Upload Certificate to Permanent Storage (Shelby)
+    // 5. Upload Certificate to Permanent storage (Shelby)
     const certString = JSON.stringify(certificate, null, 2);
     const certBuffer = Buffer.from(certString, 'utf-8');
     

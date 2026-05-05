@@ -31,10 +31,10 @@ export function FiatOnramp({
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-surface border border-theme rounded-xl max-w-md w-full p-6">
+      <div className="bg-surface border border-border rounded-xl max-w-md w-full p-6">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xl font-semibold">Fund Your Wallet</h3>
-          <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
+          <h3 className="text-xl font-medium">Fund Your Wallet</h3>
+          <button onClick={onClose} className="p-1 hover:bg-bg rounded">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -42,7 +42,7 @@ export function FiatOnramp({
           <p className="text-secondary">
             Send APT to your wallet address to fund your account.
           </p>
-          <div className="p-4 bg-secondary rounded-lg">
+          <div className="p-4 bg-bg rounded-lg">
             <p className="text-xs text-secondary mb-2">Your Wallet Address</p>
             <div className="flex items-center gap-2">
               <p className="text-sm font-mono break-all flex-1">{address}</p>
@@ -51,7 +51,7 @@ export function FiatOnramp({
                 className="p-2 hover:opacity-80 rounded shrink-0"
               >
                 {copied ? (
-                  <CheckCircle className="w-4 h-4 text-green-500" />
+                  <CheckCircle className="w-4 h-4 text-success" />
                 ) : (
                   <Copy className="w-4 h-4 text-secondary" />
                 )}
@@ -62,13 +62,13 @@ export function FiatOnramp({
             href="https://aptos.dev/en/network/faucet"
             target="_blank"
             rel="noopener noreferrer"
-            className="block w-full py-3 bg-blue-600 text-white rounded-lg font-medium text-center hover:bg-blue-700"
+            className="block w-full py-3 bg-primary text-white rounded-lg font-medium text-center hover:bg-primary-hover"
           >
             Get Testnet APT from Faucet
           </a>
           <button
             onClick={onClose}
-            className="w-full py-3 border border-theme rounded-lg hover:bg-secondary"
+            className="w-full py-3 border border-border rounded-lg hover:bg-bg"
           >
             Close
           </button>

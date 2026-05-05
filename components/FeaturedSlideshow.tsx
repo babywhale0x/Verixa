@@ -111,8 +111,8 @@ export function FeaturedSlideshow({ items }: { items: Content[] }) {
 
   return (
     <div 
-      className="relative w-full rounded-2xl overflow-hidden shadow-2xl mb-8 group"
-      style={{ height: '400px', background: 'var(--surface)' }}
+      className="relative w-full rounded-2xl overflow-hidden shadow-none mb-8 group"
+      style={{ height: '400px', background: 'var(--color-surface)' }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -166,12 +166,12 @@ export function FeaturedSlideshow({ items }: { items: Content[] }) {
 
           {/* Details block */}
           <div className="absolute bottom-0 left-0 p-6 sm:p-8 md:p-10 w-full z-10 pointer-events-none">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-2 tracking-tight drop-shadow-md">
+            <h2 className="text-3xl md:text-5xl font-medium text-white mb-2 tracking-tight drop-shadow-sm">
               {currentItem.title}
             </h2>
             <div className="flex items-center gap-2 mb-6 text-white/90 font-medium">
               <span>By {formatAddress(currentItem.creator)}</span>
-              <span className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-[10px] font-bold">✓</span>
+              <span className="w-4 h-4 rounded-full bg-primary flex items-center justify-center text-[10px] font-medium">✓</span>
             </div>
 
             {/* Stats Box */}
@@ -182,35 +182,35 @@ export function FeaturedSlideshow({ items }: { items: Content[] }) {
               {isImage ? (
                 <>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">Cite</span>
-                    <span className="text-white font-bold">{Number(currentItem.citePrice) > 0 ? formatApt(Number(currentItem.citePrice)) : 'Free'}</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">Cite</span>
+                    <span className="text-white font-medium">{Number(currentItem.citePrice) > 0 ? formatApt(Number(currentItem.citePrice)) : 'Free'}</span>
                   </div>
                   <div className="flex flex-col border-l border-white/20 pl-6">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">License</span>
-                    <span className="text-white font-bold">{mockLicensePrice} APT</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">License</span>
+                    <span className="text-white font-medium">{mockLicensePrice} APT</span>
                   </div>
                   <div className="flex flex-col border-l border-white/20 pl-6">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">Commercial</span>
-                    <span className="text-white font-bold">{mockCommercialPrice} APT</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">Commercial</span>
+                    <span className="text-white font-medium">{mockCommercialPrice} APT</span>
                   </div>
                   <div className="flex flex-col border-l border-white/20 pl-6">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">Total Volume</span>
-                    <span className="text-white font-bold">{mockVolume} APT</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">Total Volume</span>
+                    <span className="text-white font-medium">{mockVolume} APT</span>
                   </div>
                 </>
               ) : (
                 <>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">View</span>
-                    <span className="text-white font-bold">{Number(currentItem.streamPrice) > 0 ? formatApt(Number(currentItem.streamPrice)) : 'Free'}</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">View</span>
+                    <span className="text-white font-medium">{Number(currentItem.streamPrice) > 0 ? formatApt(Number(currentItem.streamPrice)) : 'Free'}</span>
                   </div>
                   <div className="flex flex-col border-l border-white/20 pl-6">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">Cite</span>
-                    <span className="text-white font-bold">{Number(currentItem.citePrice) > 0 ? formatApt(Number(currentItem.citePrice)) : 'Free'}</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">Cite</span>
+                    <span className="text-white font-medium">{Number(currentItem.citePrice) > 0 ? formatApt(Number(currentItem.citePrice)) : 'Free'}</span>
                   </div>
                   <div className="flex flex-col border-l border-white/20 pl-6">
-                    <span className="text-[10px] text-white/60 font-bold uppercase tracking-wider mb-1">License</span>
-                    <span className="text-white font-bold">{mockLicensePrice} APT</span>
+                    <span className="text-[10px] text-white/60 font-medium uppercase tracking-wider mb-1">License</span>
+                    <span className="text-white font-medium">{mockLicensePrice} APT</span>
                   </div>
                 </>
               )}

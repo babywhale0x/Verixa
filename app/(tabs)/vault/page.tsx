@@ -367,64 +367,64 @@ export default function VaultPage() {
 
   if (!connected) {
     return (
-      <div className="min-h-screen bg-secondary flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--color-bg)' }}>
         <div className="text-center">
-          <Lock className="w-16 h-16 mx-auto text-muted mb-4" />
-          <h2 className="text-2xl font-bold mb-2">Connect Your Wallet</h2>
-          <p className="text-secondary">Connect your wallet to access your vault</p>
+          <Lock className="w-16 h-16 mx-auto mb-4" style={{ color: 'var(--color-text-muted)' }} />
+          <h2 className="text-[1.75rem] font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>Your vault</h2>
+          <p className="text-[15px]" style={{ color: 'var(--color-text-secondary)' }}>Connect your wallet to access your vault</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-secondary">
+    <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
       {/* Header */}
-      <header className="bg-surface border-b border-theme">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-bold">Your Vault</h1>
-            <button
-              onClick={() => setShowFundModal(true)}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              <span>Fund Wallet</span>
+      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
+        <div className="max-w-[1100px] mx-auto px-8">
+          <div className="flex items-center justify-between h-[60px]">
+            <div>
+              <div className="section-label" style={{ marginBottom: 0 }}>Vault</div>
+              <h1 className="text-[17px] font-medium" style={{ color: 'var(--color-text-primary)' }}>Your vault</h1>
+            </div>
+            <button onClick={() => setShowFundModal(true)} className="btn btn-secondary btn-sm">
+              Fund wallet
             </button>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1100px] mx-auto px-8 py-8">
         {/* Storage Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="card p-4">
-            <p className="text-sm text-secondary">Storage Used</p>
-            <p className="text-2xl font-bold">{formatFileSize(storageStats.totalBytes)}</p>
+            <p className="text-sm text-text-secondary">Storage Used</p>
+            <p className="text-2xl font-medium">{formatFileSize(storageStats.totalBytes)}</p>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-secondary">ShelbyUSD Balance</p>
+            <p className="text-sm text-text-secondary">ShelbyUSD Balance</p>
             <div className="flex items-center gap-2 mt-1">
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-              <p className="text-2xl font-bold">{(Number(storageStats.walletBalance) / 1e8).toFixed(2)} SUSD</p>
+              <div className="w-2 h-2 rounded-full bg-success" />
+              <p className="text-2xl font-medium">{(Number(storageStats.walletBalance) / 1e8).toFixed(2)} SUSD</p>
             </div>
           </div>
           <div className="card p-4">
-            <p className="text-sm text-secondary">Total Fees Paid</p>
-            <p className="text-2xl font-bold text-green-600">
+            <p className="text-sm text-text-secondary">Total Fees Paid</p>
+            <p className="text-2xl font-medium text-success">
               {files.reduce((sum, f) => sum + (f.storageFee || 0), 0).toFixed(4)} SUSD
             </p>
           </div>
         </div>
 
-        {/* Upload Area */}
+        {/* Upload area */}
         {stagedFiles.length > 0 ? (
-          <div className="card p-6 mb-8 border border-blue-200 dark:border-blue-900/50 bg-blue-50 dark:bg-blue-900/20">
+          <div className="card p-6 mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold">Confirm Upload</h2>
+              <h2 className="text-[15px] font-medium" style={{ color: 'var(--color-text-primary)' }}>Confirm upload</h2>
               <button
                 onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
                 disabled={isUploading}
-                className="flex items-center gap-1 text-sm text-secondary hover:text-primary"
+                className="btn btn-sm btn-secondary"
               >
                 <ArrowLeft className="w-4 h-4" /> Change files
               </button>
@@ -441,7 +441,7 @@ export default function VaultPage() {
                     {getFileIcon(f.type)}
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium truncate">{finalName}</p>
-                      <p className="text-xs text-muted">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
+                      <p className="text-xs text-text-muted">{(f.size / 1024 / 1024).toFixed(2)} MB · {f.type}</p>
                     </div>
                   </div>
                 );
@@ -450,28 +450,28 @@ export default function VaultPage() {
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">
+                <label className="block text-sm font-medium text-text-primary mb-1">
                   {stagedFiles.length === 1 ? 'Name' : 'Base Name'}
                 </label>
                 <input
                   type="text"
                   value={stagedTitle}
                   onChange={(e) => setStagedTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-theme rounded-xl bg-surface"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface"
                   placeholder={stagedFiles[0]?.name || 'Enter name'}
                 />
                 {stagedFiles.length > 1 && (
-                  <p className="text-xs text-secondary mt-1">
+                  <p className="text-xs text-text-secondary mt-1">
                     Files will be named <strong>{stagedTitle || 'Name'} 1</strong>, <strong>{stagedTitle || 'Name'} 2</strong>…
                   </p>
                 )}
               </div>
               <div>
-                <label className="block text-sm font-medium text-primary mb-1">Description (Optional)</label>
+                <label className="block text-sm font-medium text-text-primary mb-1">Description (Optional)</label>
                 <textarea
                   value={stagedDescription}
                   onChange={(e) => setStagedDescription(e.target.value)}
-                  className="w-full px-4 py-2 border border-theme rounded-xl bg-surface"
+                  className="w-full px-4 py-2 border border-border rounded-lg bg-surface"
                   rows={2}
                   placeholder="Describe these files"
                 />
@@ -479,35 +479,22 @@ export default function VaultPage() {
 
               {/* Progress indicator */}
               {uploadProgress && (
-                <div className="p-3 bg-surface rounded-lg border border-blue-200 dark:border-blue-900/50">
-                  <div className="flex items-center gap-3 mb-2">
-                    <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
-                    <span className="text-sm font-medium text-blue-800">
-                      Uploading {uploadProgress.current} of {uploadProgress.total}…
-                    </span>
-                  </div>
-                  <div className="w-full bg-blue-200 rounded-full h-1.5">
-                    <div
-                      className="bg-blue-600 h-1.5 rounded-full transition-all"
-                      style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%` }}
-                    />
+                <div className="alert alert-info">
+                  <div className="alert-dot" />
+                  <div className="flex-1">
+                    <p className="mb-2">Uploading {uploadProgress.current} of {uploadProgress.total}&hellip;</p>
+                    <div className="w-full rounded-full h-1" style={{ background: 'var(--color-border)' }}>
+                      <div className="h-1 rounded-full transition-all" style={{ width: `${(uploadProgress.current / uploadProgress.total) * 100}%`, background: 'var(--color-primary)' }} />
+                    </div>
                   </div>
                 </div>
               )}
 
-              <div className="flex gap-4 pt-2">
-                <button
-                  onClick={handleConfirmUpload}
-                  disabled={isUploading}
-                  className="flex-1 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 disabled:opacity-50 flex justify-center items-center gap-2"
-                >
-                  {isUploading ? <><Loader2 className="w-5 h-5 animate-spin"/> Uploading…</> : <><Upload className="w-5 h-5" /> Upload to Vault</>}
+              <div className="flex gap-3 pt-2">
+                <button onClick={handleConfirmUpload} disabled={isUploading} className="btn btn-primary flex-1 justify-center">
+                  {isUploading ? <><Loader2 className="w-4 h-4 animate-spin" /> Uploading&hellip;</> : <><Upload className="w-4 h-4" /> Upload to vault</>}
                 </button>
-                <button
-                  onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }}
-                  disabled={isUploading}
-                  className="px-6 py-3 border border-theme rounded-xl hover:bg-secondary disabled:opacity-50 font-medium"
-                >
+                <button onClick={() => { setStagedFiles([]); setStagedTitle(''); setStagedDescription(''); }} disabled={isUploading} className="btn btn-secondary">
                   Cancel
                 </button>
               </div>
@@ -516,25 +503,19 @@ export default function VaultPage() {
         ) : (
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-xl p-5 flex flex-col sm:flex-row items-center justify-center gap-4 cursor-pointer transition-all mb-8 shadow-sm ${
-              isDragActive ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 scale-[1.01]' : 'border-theme hover:border-gray-400 bg-surface hover:bg-secondary'
-            }`}
+            className={`upload-zone mb-8 ${ isDragActive ? 'border-primary' : '' }`}
           >
             <input {...getInputProps()} />
-            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 text-blue-600 rounded-full shadow-inner">
-               <Upload className="w-5 h-5" />
-            </div>
-            <div className="text-center sm:text-left flex-1">
-              <p className="text-sm font-semibold text-primary">
-                {isDragActive ? 'Drop files here to securely upload' : 'Click to browse or drag & drop files here'}
-              </p>
-              <p className="text-xs text-secondary mt-0.5">Max 500 MB per file · Decentralized & Encrypted</p>
-            </div>
-            <button className="hidden sm:block px-5 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 shadow-sm transition-colors">
-              Browse Files
-            </button>
+            <Upload className="w-8 h-8 mb-4" strokeWidth={1.25} style={{ color: 'var(--color-text-muted)' }} />
+            <h4 className="text-[14px] font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
+              {isDragActive ? 'Drop files here' : 'Drag & drop your files here'}
+            </h4>
+            <p className="text-[13px]" style={{ color: 'var(--color-text-muted)' }}>
+              <strong style={{ color: 'var(--color-primary)', fontWeight: 500 }}>Click to browse</strong> or drag any file type &middot; Max 500 MB &middot; Encrypted
+            </p>
           </div>
         )}
+
 
         {/* File List */}
         {isLoading ? (
@@ -542,7 +523,7 @@ export default function VaultPage() {
             <Loader2 className="w-8 h-8 animate-spin mx-auto" />
           </div>
         ) : groupedItems.length === 0 ? (
-          <div className="text-center py-12 text-secondary">
+          <div className="text-center py-12 text-text-secondary">
             <File className="w-16 h-16 mx-auto mb-4" />
             <p>No files yet. Upload your first file above.</p>
           </div>
@@ -550,67 +531,66 @@ export default function VaultPage() {
           <div className="card overflow-hidden">
             
               {currentFolder && (
-                 <div className="flex items-center gap-2 mb-4 p-4 bg-surface rounded-lg border border-theme">
-                    <button onClick={() => setCurrentFolder(null)} className="flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 bg-blue-50 dark:bg-blue-900/20 px-3 py-1.5 rounded-lg transition-colors">
-                      <ArrowLeft className="w-4 h-4" /> Back to Vault
+                 <div className="flex items-center gap-2 mb-4 p-4" style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)' }}>
+                    <button onClick={() => setCurrentFolder(null)} className="btn btn-sm btn-secondary">
+                      <ArrowLeft className="w-4 h-4" /> Back to vault
                     </button>
-                    <span className="font-semibold text-primary flex items-center gap-2">
-                      <FolderIcon className="w-5 h-5 text-blue-400" />
+                    <span className="text-[14px] font-medium flex items-center gap-2" style={{ color: 'var(--color-text-primary)' }}>
+                      <FolderIcon className="w-4 h-4" style={{ color: 'var(--color-primary)' }} />
                       {currentFolder.name}
                     </span>
                  </div>
               )}
 
-<table className="w-full">
-              <thead className="bg-secondary border-b border-theme">
+<table className="w-full" style={{ borderCollapse: 'collapse', fontSize: 13 }}>
+              <thead style={{ background: 'var(--color-bg)', borderBottom: '1px solid var(--color-border)' }}>
                 <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">File</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Size</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Fee Paid</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-secondary">Status</th>
-                  <th className="px-6 py-3 text-right text-sm font-medium text-secondary">Actions</th>
+                  <th className="px-4 py-3 text-left" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>File</th>
+                  <th className="px-4 py-3 text-left" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Size</th>
+                  <th className="px-4 py-3 text-left" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Fee paid</th>
+                  <th className="px-4 py-3 text-left" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Type</th>
+                  <th className="px-4 py-3 text-left" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Status</th>
+                  <th className="px-4 py-3 text-right" style={{ fontSize: 11, fontWeight: 500, color: 'var(--color-text-muted)', letterSpacing: '0.06em', textTransform: 'uppercase' }}>Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[var(--border)]">
+              <tbody>
                 {(currentFolder ? currentFolder.files : groupedItems).map((item) => {
                   if (item.isFolder) {
                     return (
-                      <tr key={item.id} className="hover:bg-secondary cursor-pointer" onClick={() => setCurrentFolder(item)}>
-                        <td className="px-6 py-4">
+                      <tr key={item.id} style={{ cursor: 'pointer' }} onClick={() => setCurrentFolder(item)} onMouseEnter={e => (e.currentTarget.style.background = 'var(--color-bg)')} onMouseLeave={e => (e.currentTarget.style.background = '')}>
+                        <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <FolderIcon className="w-5 h-5 text-blue-500 fill-blue-100" />
-                            <span className="font-medium">{item.name}</span>
-                            <span className="text-xs bg-gray-100 text-secondary px-2 py-0.5 rounded-full">{item.files.length} files</span>
+                            <FolderIcon className="w-5 h-5" style={{ color: 'var(--color-primary)' }} />
+                            <span className="font-medium text-[13px]" style={{ color: 'var(--color-text-primary)' }}>{item.name}</span>
+                            <span className="badge badge-primary">{item.files.length} files</span>
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-secondary">
-                          {formatFileSize(item.size)}
-                        </td>
-                        <td className="px-6 py-4 text-sm font-medium text-green-600">
+                        <td className="px-4 py-3 font-mono text-[12px]" style={{ color: 'var(--color-text-muted)' }}>{formatFileSize(item.size)}</td>
+                        <td className="px-4 py-3 font-mono text-[12px]" style={{ color: 'var(--color-text-muted)' }}>
                           {item.storageFee != null ? item.storageFee.toFixed(4) : '—'} SUSD
                         </td>
-                        <td className="px-6 py-4 text-sm text-secondary">
+                        <td className="px-4 py-3 text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>
                           Folder
                         </td>
-                        <td className="px-6 py-4">
-                           <span className="text-sm text-secondary">—</span>
+                        <td className="px-4 py-3">
+                           <span className="text-[13px]" style={{ color: 'var(--color-text-secondary)' }}>—</span>
                         </td>
-                        <td className="px-6 py-4 text-right">
+                        <td className="px-4 py-3 text-right">
                           <button
                             onClick={(e) => { e.stopPropagation(); setCurrentFolder(item); }}
-                            className="p-2 hover:bg-secondary rounded-lg text-blue-600 font-medium text-sm"
+                            className="btn btn-sm btn-secondary"
                           >
-                            Open Folder
+                            Open
                           </button>
                         </td>
                       </tr>
                     );
                   }
+
                   
                   const file = item as StoredFile;
                   return (
-                    <tr key={file.id} className="hover:bg-secondary">
+                    <tr key={file.id} className="hover:bg-bg">
 
 <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
@@ -618,26 +598,26 @@ export default function VaultPage() {
                         <span className="font-medium">{file.name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-secondary">
+                    <td className="px-6 py-4 text-sm text-text-secondary">
                       {formatFileSize(file.size)}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-green-600">
+                    <td className="px-6 py-4 text-sm font-medium text-success">
                       {file.storageFee != null ? file.storageFee.toFixed(4) : '—'} SUSD
                     </td>
-                    <td className="px-6 py-4 text-sm text-secondary">
+                    <td className="px-6 py-4 text-sm text-text-secondary">
                       {file.contentType}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
-                          {file.encrypted && <Lock className="w-4 h-4 text-green-500" />}
-                          {file.isPublic && <Globe className="w-4 h-4 text-blue-500" />}
-                          <span className="text-sm text-secondary">
+                          {file.encrypted && <Lock className="w-4 h-4 text-success" />}
+                          {file.isPublic && <Globe className="w-4 h-4 text-text-primary" />}
+                          <span className="text-sm text-text-secondary">
                             {file.isPublic ? 'Public' : 'Private'}
                           </span>
                         </div>
-                        <div className="text-xs text-orange-500 font-medium">
-                          Expires in: <ExpiryTimer createdAt={file.createdAt} />
+                        <div className="text-[12px] font-mono" style={{ color: 'var(--color-text-muted)' }}>
+                          Expires: <ExpiryTimer createdAt={file.createdAt} />
                         </div>
                       </div>
                     </td>
@@ -645,14 +625,14 @@ export default function VaultPage() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); handlePreview(file); }}
-                          className="p-2 hover:bg-secondary rounded-lg text-blue-600"
+                          className="p-2 hover:bg-bg rounded-lg text-text-primary"
                           title="Preview"
                         >
                           <Eye className="w-4 h-4" />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); handleDownload(file.blobId, file.name); }}
-                          className="p-2 hover:bg-secondary rounded-lg"
+                          className="p-2 hover:bg-bg rounded-lg"
                           title="Download"
                         >
                           <Download className="w-4 h-4" />
@@ -689,41 +669,41 @@ export default function VaultPage() {
       {/* Preview Modal */}
       {previewFile && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-surface rounded-2xl shadow-xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-theme">
+          <div className="bg-surface rounded-xl  w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border">
               <div className="flex items-center gap-3">
                 {getFileIcon(previewFile.contentType)}
-                <h3 className="font-semibold text-lg">{previewFile.name}</h3>
+                <h3 className="font-medium text-lg">{previewFile.name}</h3>
               </div>
-              <button onClick={closePreview} className="p-2 hover:bg-secondary rounded-full transition-colors">
+              <button onClick={closePreview} className="p-2 hover:bg-bg rounded-full transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="flex-1 overflow-auto bg-secondary flex items-center justify-center p-4 min-h-[300px]">
+            <div className="flex-1 overflow-auto bg-bg flex items-center justify-center p-4 min-h-[300px]">
               {isPreviewLoading ? (
-                <div className="flex flex-col items-center text-secondary">
-                   <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+                <div className="flex flex-col items-center text-text-secondary">
+                   <Loader2 className="w-8 h-8 animate-spin mb-3 text-text-primary" />
                    <p>Decrypting and loading preview...</p>
                 </div>
               ) : previewUrl ? (
                 previewFile.contentType.startsWith('image/') ? (
-                  <img src={previewUrl} alt={previewFile.name} className="max-w-full max-h-full object-contain rounded-lg shadow-sm" />
+                  <img src={previewUrl} alt={previewFile.name} className="max-w-full max-h-full object-contain rounded-lg " />
                 ) : previewFile.contentType.startsWith('video/') ? (
-                  <video src={previewUrl} controls autoPlay className="max-w-full max-h-full rounded-lg shadow-sm" />
+                  <video src={previewUrl} controls autoPlay className="max-w-full max-h-full rounded-lg " />
                 ) : previewFile.contentType.startsWith('audio/') ? (
                   <audio src={previewUrl} controls className="w-full max-w-md" />
                 ) : (
                   <div className="text-center">
-                    <FileText className="w-16 h-16 text-muted mx-auto mb-4" />
-                    <p className="text-secondary mb-4">Preview not available for this file type.</p>
-                    <button onClick={() => handleDownload(previewFile.blobId, previewFile.name)} className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium">
+                    <FileText className="w-16 h-16 text-text-muted mx-auto mb-4" />
+                    <p className="text-text-secondary mb-4">Preview not available for this file type.</p>
+                    <button onClick={() => handleDownload(previewFile.blobId, previewFile.name)} className="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover font-medium">
                        <Download className="w-4 h-4 inline mr-2" /> Download to View
                     </button>
                   </div>
                 )
               ) : (
-                <div className="text-secondary">Failed to load preview.</div>
+                <div className="text-text-secondary">Failed to load preview.</div>
               )}
             </div>
           </div>

@@ -1,11 +1,21 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { DM_Sans, DM_Mono } from 'next/font/google';
 import './globals.css';
 import { WalletProvider } from '@/components/wallet/WalletProvider';
 import { Toaster } from 'react-hot-toast';
 import { ThemeProvider } from '@/components/theme/ThemeProvider';
 
-const inter = Inter({ subsets: ['latin'] });
+const dmSans = DM_Sans({ 
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-dm-sans'
+});
+
+const dmMono = DM_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500'],
+  variable: '--font-dm-mono'
+});
 
 export const metadata: Metadata = {
   title: 'Verixa - Decentralized Storage & Creator Marketplace',
@@ -19,7 +29,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className}>
+      <body className={`${dmSans.variable} ${dmMono.variable} font-sans`}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <WalletProvider>
             {children}
