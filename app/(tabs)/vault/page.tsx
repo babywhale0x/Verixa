@@ -379,22 +379,18 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
-      {/* Header */}
-      <div style={{ background: 'var(--color-surface)', borderBottom: '1px solid var(--color-border)' }}>
-        <div className="max-w-[1100px] mx-auto px-8">
-          <div className="flex items-center justify-between h-[60px]">
-            <div>
-              <div className="section-label" style={{ marginBottom: 0 }}>Vault</div>
-              <h1 className="text-[17px] font-medium" style={{ color: 'var(--color-text-primary)' }}>Your vault</h1>
-            </div>
-            <button onClick={() => setShowFundModal(true)} className="btn btn-secondary btn-sm">
-              Fund wallet
-            </button>
-          </div>
-        </div>
-      </div>
+      <div className="max-w-[1100px] mx-auto px-8">
 
-      <div className="max-w-[1100px] mx-auto px-8 py-8">
+        {/* Page header — no divider, flows into content */}
+        <div className="flex items-end justify-between pt-10 pb-8">
+          <div>
+            <p className="text-[11px] font-medium tracking-[0.08em] uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Vault</p>
+            <h1 className="text-[26px] font-medium tracking-tight" style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.015em' }}>Your vault</h1>
+          </div>
+          <button onClick={() => setShowFundModal(true)} className="btn btn-primary btn-sm">
+            Fund wallet
+          </button>
+        </div>
         {/* Storage Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <div className="card p-4">
@@ -708,7 +704,7 @@ export default function VaultPage() {
             </div>
           </div>
         </div>
-      )}
-</div>
+      </div>
+    </div>
   );
 }

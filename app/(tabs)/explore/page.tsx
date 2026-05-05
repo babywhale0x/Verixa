@@ -297,8 +297,8 @@ export default function ExplorePage() {
   return (
     <div className="min-h-screen">
       {/* Search header */}
-      <div className="sticky top-[60px] z-30 bg-bg">
-        <div className="max-w-[1100px] mx-auto px-8 py-4">
+      <div className="sticky top-[60px] z-30 bg-bg pt-4 pb-2">
+        <div className="max-w-[1100px] mx-auto px-8">
           <div className="flex gap-3 items-center">
             {/* Search */}
             <div className="relative flex-1">

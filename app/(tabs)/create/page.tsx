@@ -425,15 +425,18 @@ export default function CreatePage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <header className="bg-surface border-b border-border">
-        <div className="max-w-[1100px] mx-auto px-8">
-          <div className="flex items-center justify-between h-16">
-            <h1 className="text-xl font-medium">Create content</h1>
+      <div className="max-w-[1100px] mx-auto px-8">
+        
+        {/* Page header — no divider, flows into content */}
+        <div className="flex items-end justify-between pt-10 pb-8">
+          <div>
+            <p className="text-[11px] font-medium tracking-[0.08em] uppercase mb-1" style={{ color: 'var(--color-text-muted)' }}>Publish</p>
+            <h1 className="text-[26px] font-medium tracking-tight" style={{ color: 'var(--color-text-primary)', letterSpacing: '-0.015em' }}>Create content</h1>
           </div>
         </div>
-      </header>
+      </div>
 
-      <div className="max-w-4xl mx-auto px-8 py-8">
+      <div className="max-w-4xl mx-auto px-8">
 
         {/* ─── STEP 1: Drop Zone (no files staged yet) ─── */}
         {stagedFiles.length === 0 && (
