@@ -10,15 +10,27 @@ export function MatrixText({
   text: string; 
   delay?: number; 
 }) {
-  const [displayText, setDisplayText] = useState('');
-  const [isDecoding, setIsDecoding] = useState(false);
+  const [displayText, setDisplayText] = useState(text);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
+  useEffect(() => {
+    if (!isMounted) return;
+
     let interval: NodeJS.Timeout;
     
-    // Convert delay from seconds to ms
+    // Scramble effect during the delay
+    const scrambleInterval = setInterval(() => {
+      setDisplayText(
+        text.split('').map(c => (c === ' ' || c === '.' ? c : chars[Math.floor(Math.random() * chars.length)])).join('')
+      );
+    }, 50);
+
     const startTimeout = setTimeout(() => {
-      setIsDecoding(true);
+      clearInterval(scrambleInterval);
       let iteration = 0;
       
       interval = setInterval(() => {
@@ -36,23 +48,22 @@ export function MatrixText({
 
         if (iteration >= text.length) {
           clearInterval(interval);
-          setIsDecoding(false);
           setDisplayText(text); // Ensure exactly finishing
         }
         
-        // Increase iteration pace - smaller number = longer decode
-        iteration += 1 / 4; 
+        // Increase iteration pace
+        iteration += 1 / 3; 
       }, 30);
     }, delay * 1000);
 
     return () => {
       clearTimeout(startTimeout);
+      clearInterval(scrambleInterval);
       if (interval) clearInterval(interval);
     };
-  }, [text, delay]);
+  }, [text, delay, isMounted]);
 
-  // Keep layout stable before animation starts
-  if (!isDecoding && displayText === '') {
+  if (!isMounted) {
     return <span className="opacity-0">{text}</span>;
   }
 

@@ -2,48 +2,73 @@
 import Link from 'next/link';
 import { ConnectButton } from '@/components/wallet/ConnectButton';
 import { ThemeToggle } from '@/components/theme/ThemeToggle';
+import { MatrixText } from '@/components/ui/MatrixText';
+import { motion } from 'framer-motion';
 import { Layers, Zap, ShieldCheck, Music, Image as ImageIcon, Video, FileText, CheckCircle2, AlertCircle, Info, UploadCloud } from 'lucide-react';
 
 export default function HomePage() {
   return (
     <div className="min-h-screen bg-bg text-text-secondary font-sans leading-[1.6]">
       {/* NAV */}
-      <nav className="bg-surface border-b border-border px-8 h-[60px] flex items-center justify-between sticky top-0 z-[100]">
-        <Link href="/" className="text-[17px] font-medium text-text-primary tracking-[-0.01em]">
-          Veri<span className="text-primary">xa</span>
-        </Link>
-        <ul className="hidden md:flex items-center gap-8 list-none">
-          <li><Link href="/explore" className="text-[14px] font-medium text-text-primary transition-colors">Explore</Link></li>
-          <li><Link href="/vault" className="text-[14px] text-text-secondary hover:text-text-primary transition-colors">Vault</Link></li>
-          <li><Link href="/create" className="text-[14px] text-text-secondary hover:text-text-primary transition-colors">Create</Link></li>
-        </ul>
-        <div className="flex items-center gap-2.5">
-          <ThemeToggle />
-          <ConnectButton />
+      <nav className="bg-surface border-b border-border sticky top-0 z-[100]">
+        <div className="max-w-[1440px] mx-auto px-8 w-full h-[60px] flex items-center justify-between">
+          <Link href="/" className="text-[17px] font-medium text-text-primary tracking-[-0.01em]">
+            Veri<span className="text-primary">xa</span>
+          </Link>
+          <ul className="hidden md:flex items-center gap-8 list-none">
+            <li><Link href="/explore" className="text-[14px] font-medium text-text-primary transition-colors">Explore</Link></li>
+            <li><Link href="/vault" className="text-[14px] text-text-secondary hover:text-text-primary transition-colors">Vault</Link></li>
+            <li><Link href="/create" className="text-[14px] text-text-secondary hover:text-text-primary transition-colors">Create</Link></li>
+          </ul>
+          <div className="flex items-center gap-2.5">
+            <ThemeToggle />
+            <ConnectButton />
+          </div>
         </div>
       </nav>
 
       {/* HERO */}
-      <section className="pt-[6rem] pb-[5rem] border-b border-border">
-        <div className="max-w-[1100px] mx-auto px-8">
-          <div className="inline-flex items-center gap-1.5 text-[12px] font-medium text-primary bg-primary-light px-3 py-1 rounded-full mb-6 tracking-[0.02em] before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary before:inline-block">
+      <section className="pt-[6rem] pb-[5rem]">
+        <div className="max-w-[1440px] mx-auto px-8">
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="inline-flex items-center gap-1.5 text-[12px] font-medium text-primary bg-primary-light px-3 py-1 rounded-full mb-6 tracking-[0.02em] before:content-[''] before:w-1.5 before:h-1.5 before:rounded-full before:bg-primary before:inline-block"
+          >
             Built on Aptos & Shelby Protocol
-          </div>
+          </motion.div>
           <h1 className="text-[clamp(2rem,4vw,3rem)] font-medium text-text-primary leading-[1.2] tracking-[-0.02em] max-w-[560px] mb-5">
-            Your files.<br/>Your earnings.
+            <MatrixText text="Your files." delay={0} /><br/>
+            <MatrixText text="Your earnings." delay={0.6} />
           </h1>
-          <p className="text-[16px] text-text-secondary max-w-[480px] mb-8 leading-[1.7]">
+          <motion.p 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.2, duration: 0.5 }}
+            className="text-[16px] text-text-secondary max-w-[480px] mb-8 leading-[1.7]"
+          >
             Decentralized storage meets creator marketplace. Store files permanently, publish creative work, and earn directly to your wallet.
-          </p>
-          <div className="flex gap-2.5 items-center">
+          </motion.p>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.6, duration: 0.5 }}
+            className="flex gap-2.5 items-center"
+          >
             <Link href="/vault" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-primary text-white border border-primary hover:bg-primary-hover hover:border-primary-hover transition-all leading-none">
               Start storing
             </Link>
             <Link href="/explore" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-surface text-text-primary border border-border hover:bg-bg transition-all leading-none">
               Explore creators
             </Link>
-          </div>
-          <div className="mt-[3rem] flex items-center gap-8">
+          </motion.div>
+          <motion.div 
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 1.8, duration: 0.5 }}
+            className="mt-[3rem] flex items-center gap-8"
+          >
             <div className="flex flex-col gap-[2px]">
               <span className="text-[18px] font-medium text-text-primary tracking-[-0.01em]">14,200+</span>
               <span className="text-[12px] text-text-muted">Active creators</span>
@@ -58,13 +83,13 @@ export default function HomePage() {
               <span className="text-[18px] font-medium text-text-primary tracking-[-0.01em]">∞</span>
               <span className="text-[12px] text-text-muted">Permanent storage</span>
             </div>
-          </div>
+          </motion.div>
         </div>
       </section>
 
       {/* STATS BAND */}
-      <div className="bg-surface border-b border-border py-[3rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+      <div className="py-[3rem] px-8">
+        <div className="max-w-[1440px] mx-auto bg-surface border border-border rounded-[24px] py-[3rem] px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             <div className="text-center">
               <div className="text-[28px] font-medium text-text-primary tracking-[-0.02em] mb-1">2.4<span className="text-primary">M</span></div>
@@ -88,7 +113,7 @@ export default function HomePage() {
 
       {/* FEATURES */}
       <section className="py-[5rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="mb-[2.5rem]">
             <div className="text-[12px] font-medium text-text-muted tracking-[0.08em] uppercase mb-3">Why Verixa</div>
             <h2 className="text-[1.75rem] font-medium text-text-primary tracking-[-0.015em] mb-3">Infrastructure for the creator economy</h2>
@@ -122,7 +147,7 @@ export default function HomePage() {
 
       {/* CONTENT TYPES */}
       <section className="pb-[5rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="mb-[2.5rem]">
             <div className="text-[12px] font-medium text-text-muted tracking-[0.08em] uppercase mb-3">Content types</div>
             <h2 className="text-[1.75rem] font-medium text-text-primary tracking-[-0.015em] mb-3">Support for all file types</h2>
@@ -162,7 +187,7 @@ export default function HomePage() {
 
       {/* MARKETPLACE PREVIEW */}
       <section className="pb-[5rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="flex items-end justify-between mb-[2.5rem]">
             <div>
               <div className="text-[12px] font-medium text-text-muted tracking-[0.08em] uppercase mb-3">Marketplace</div>
@@ -206,7 +231,7 @@ export default function HomePage() {
 
       {/* UPLOAD + TABLE */}
       <section className="pb-[5rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
             {/* Upload zone */}
             <div>
@@ -295,24 +320,28 @@ export default function HomePage() {
       </section>
 
       {/* CTA SECTION */}
-      <div className="bg-surface border-y border-border py-[5rem] text-center">
-        <div className="max-w-[1100px] mx-auto px-8">
-          <h2 className="text-[2rem] font-medium text-text-primary tracking-[-0.02em] mb-4">Ready to get started?</h2>
-          <p className="text-[15px] text-text-secondary max-w-[420px] mx-auto mb-8 leading-[1.7]">Join thousands of creators already using Verixa for decentralized storage and monetization.</p>
-          <div className="flex gap-2.5 justify-center">
-            <Link href="/vault" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-primary text-white border border-primary hover:bg-primary-hover transition-all leading-none">
-              Launch app
-            </Link>
-            <Link href="/docs" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-surface text-text-primary border border-border hover:bg-bg transition-all leading-none">
-              Read the docs
-            </Link>
+      <div className="bg-bg py-[5rem] px-8">
+        <div className="max-w-[1440px] mx-auto bg-surface border border-border rounded-[24px] py-[4rem] px-8 text-center relative overflow-hidden">
+          <div className="relative z-10">
+            <h2 className="text-[2rem] font-medium text-text-primary tracking-[-0.02em] mb-4">Ready to get started?</h2>
+            <p className="text-[15px] text-text-secondary max-w-[420px] mx-auto mb-8 leading-[1.7]">
+              Join thousands of creators already using Verixa for decentralized storage and monetization.
+            </p>
+            <div className="flex gap-2.5 justify-center">
+              <Link href="/vault" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-primary text-white border border-primary hover:bg-primary-hover transition-all leading-none shadow-sm">
+                Launch app
+              </Link>
+              <Link href="/docs" className="inline-flex items-center gap-1.5 font-medium text-[14px] px-[18px] py-[8px] rounded-[10px] bg-surface text-text-primary border border-border hover:bg-bg transition-all leading-none">
+                Read the docs
+              </Link>
+            </div>
           </div>
         </div>
       </div>
 
       {/* FOOTER */}
-      <footer className="bg-surface border-t border-border py-[2.5rem]">
-        <div className="max-w-[1100px] mx-auto px-8">
+      <footer className="bg-bg py-[2.5rem]">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="flex items-center justify-between">
             <div className="text-[14px] font-medium text-text-primary">
               Verixa <small className="font-normal text-[12px] text-text-muted ml-2">Built on Aptos & Shelby Protocol</small>

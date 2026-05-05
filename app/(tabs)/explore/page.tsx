@@ -298,7 +298,7 @@ export default function ExplorePage() {
     <div className="min-h-screen">
       {/* Search header */}
       <div className="sticky top-[60px] z-30 bg-bg pt-4 pb-2">
-        <div className="max-w-[1100px] mx-auto px-8">
+        <div className="max-w-[1440px] mx-auto px-8">
           <div className="flex gap-3 items-center">
             {/* Search */}
             <div className="relative flex-1">
@@ -360,7 +360,7 @@ export default function ExplorePage() {
         </div>
       )}
 
-      <div className="max-w-[1100px] mx-auto px-8 py-8">
+      <div className="max-w-[1440px] mx-auto px-8 py-8">
 
         <div className="flex gap-7">
 

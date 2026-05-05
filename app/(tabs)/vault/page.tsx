@@ -379,7 +379,7 @@ export default function VaultPage() {
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--color-bg)' }}>
-      <div className="max-w-[1100px] mx-auto px-8">
+      <div className="max-w-[1440px] mx-auto px-8">
 
         {/* Page header — no divider, flows into content */}
         <div className="flex items-end justify-between pt-10 pb-8">

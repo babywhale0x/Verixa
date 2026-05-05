@@ -425,7 +425,7 @@ export default function CreatePage() {
 
   return (
     <div className="min-h-screen bg-bg">
-      <div className="max-w-[1100px] mx-auto px-8">
+      <div className="max-w-[1440px] mx-auto px-8">
         
         {/* Page header — no divider, flows into content */}
         <div className="flex items-end justify-between pt-10 pb-8">

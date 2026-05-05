@@ -101,6 +101,12 @@ export default function ProfilePage() {
   // For toggle operations
   const [togglingFileId, setTogglingFileId] = useState<string | null>(null);
 
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
   useEffect(() => {
     if (connected && account) {
       loadAllData();
@@ -199,6 +205,8 @@ export default function ProfilePage() {
       setTogglingFileId(null);
     }
   };
+
+  if (!isMounted) return null;
 
   if (!connected) {
     return (

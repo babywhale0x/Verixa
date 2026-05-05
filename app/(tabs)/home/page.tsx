@@ -122,7 +122,7 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      <div className="max-w-[1100px] mx-auto px-8">
+      <div className="max-w-[1440px] mx-auto px-8">
 
         {/* ─── HERO ─── */}
         {!isMounted ? (
