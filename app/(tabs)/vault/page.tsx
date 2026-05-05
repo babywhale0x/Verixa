@@ -704,7 +704,7 @@ export default function VaultPage() {
             </div>
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }
